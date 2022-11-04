@@ -1,0 +1,26 @@
+plugins {
+    id 'maven-publish'
+}
+
+publishing {
+    singleVariant('release') {
+        withSourcesJar()
+    }
+    publications {
+        release(MavenPublication) {
+            groupId = 'me.kujio.android'
+            artifactId = 'kandroidutils'
+            version = '1.0'
+
+            afterEvaluate {
+                from components.release
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = 'myrepo'
+            url = "${project.buildDir}/repo"
+        }
+    }
+}
