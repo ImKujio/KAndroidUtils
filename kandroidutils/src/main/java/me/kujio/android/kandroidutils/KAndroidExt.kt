@@ -18,13 +18,10 @@ import android.graphics.drawable.Drawable
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
-import android.os.Handler
 import android.provider.Settings
 import android.util.Log
 import android.util.TypedValue
 import android.view.*
-import android.view.animation.DecelerateInterpolator
-import android.view.animation.LinearInterpolator
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.FrameLayout
@@ -39,7 +36,7 @@ import androidx.databinding.ViewDataBinding
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.hjq.permissions.XXPermissions
-import java.lang.Exception
+
 
 /**
  * manifests add:
@@ -98,7 +95,7 @@ object DisPlay {
     }
 }
 
-object Apk {
+object App {
     var versionCode = 0; private set
     var versionName = ""; private set
     var packageName = ""; private set
@@ -138,45 +135,32 @@ object Net {
     }
 }
 
-val res: Resources; get() = Res.resources
-
-object Res {
-    var primaryColor = Color.BLACK; private set
-    var secondaryColor = Color.GRAY; private set
-    var accentColor = Color.RED; private set
-    lateinit var resources: Resources
-
-    @SuppressLint("InlinedApi")
-    fun init(ctx: Context) {
-        resources = ctx.resources
-        primaryColor = tryRun {
-            TypedValue().apply {
-                ctx.theme.resolveAttribute(android.R.attr.colorPrimary, this, true)
-            }.data
-        } ?: Color.BLACK
-        secondaryColor = tryRun {
-            TypedValue().apply {
-                ctx.theme.resolveAttribute(android.R.attr.colorSecondary, this, true)
-            }.data
-        } ?: Color.GRAY
-        accentColor = tryRun {
-            TypedValue().apply {
-                ctx.theme.resolveAttribute(android.R.attr.colorAccent, this, true)
-            }.data
-        } ?: Color.RED
-    }
-}
-
 fun Application.initAppInfo() {
     DisPlay.init(this)
-    Apk.init(this)
+    App.init(this)
     Device.init(this)
     Net.init(this)
 }
 
-fun ContextThemeWrapper.initThemeInfo() {
-    Res.init(this)
-}
+val Context.primaryColor: Int
+    get() = tryRun {
+        TypedValue().apply {
+            theme.resolveAttribute(android.R.attr.colorPrimary, this, true)
+        }.data
+    } ?: Color.BLACK
+val Context.secondaryColor: Int
+    @SuppressLint("InlinedApi") get() = tryRun {
+        TypedValue().apply {
+            theme.resolveAttribute(android.R.attr.colorSecondary, this, true)
+        }.data
+    } ?: Color.GRAY
+val Context.accentColor: Int
+    get() = tryRun {
+        TypedValue().apply {
+            theme.resolveAttribute(android.R.attr.colorAccent, this, true)
+        }.data
+    } ?: Color.RED
+
 
 val Activity.THEME_LIGHT; get() = ThemeType.LIGHT
 val Activity.THEME_DARK; get() = ThemeType.DARK
@@ -195,7 +179,7 @@ fun Activity.applyImmersive(type: ThemeType) {
 }
 
 fun Activity.applyTitleBar(
-    height: Int = TitleBar.defTitleSize,
+    height: Int = TitleBar.defBarHeight,
     backgroundColor: Int = TitleBar.defBackgroundColor,
     background: Drawable? = ColorDrawable(backgroundColor),
     fitBackground: Boolean = true,
@@ -221,14 +205,13 @@ fun Activity.applyTitleBar(
     (bodyView.layoutParams as FrameLayout.LayoutParams).topMargin += sumHeight
     TitleBar(this, titleBarView).exec()
 }
-
-fun Context.checkPermission(vararg permissions :Pair<String,String>):Boolean{
-    return XXPermissions.isGranted(this,permissions.map { it.second })
+fun Context.checkPermission(vararg permissions: Pair<String, String>): Boolean {
+    return XXPermissions.isGranted(this, permissions.map { it.second })
 }
 
 fun Context.hideKeyboard() {
     if (this !is Activity) return
-    val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    val inputMethodManager = getSystemService(InputMethodManager::class.java) as InputMethodManager
     inputMethodManager.hideSoftInputFromWindow(window.decorView.windowToken, 0)
 }
 
@@ -269,7 +252,7 @@ fun EditText.showKeyboard() {
     isFocusableInTouchMode = true
     requestFocus()
     if (context !is Activity) return
-    val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    val imm = context.getSystemService(InputMethodManager::class.java) as InputMethodManager
     imm.showSoftInput(this, 0)
 }
 
@@ -282,19 +265,19 @@ fun logw(msg: String) {
 }
 
 fun logd(msg: String) {
-    if (!Apk.debug) return
+    if (!App.debug) return
     log(Log.DEBUG, msg)
 }
 
 private fun log(type: Int, msg: String) {
-    var tag = ""
+    val stack = Thread.currentThread().stackTrace
+    val tag = stack[4].className.split(".").last()
     StringBuilder().apply {
         append("┌──────────────────────────────────────────────────────────────────────────────────────────────────")
-        repeat(5) { i ->
-            val e = Thread.currentThread().stackTrace[9 - i]
-            val c = e.className.split("\\.").last()
-            if (i == 4) tag = c
-            append("\n│").append(c).append(".").append(e.methodName)
+        val size = if (stack.size < 8) stack.size - 4 else 5
+        repeat(size) { i ->
+            val e = stack[size + 3 - i]
+            append("\n│").append(e.className).append(".").append(e.methodName)
             append(":").append("(").append(e.fileName)
             append(":").append(e.lineNumber).append(")")
         }
@@ -331,7 +314,7 @@ class TitleBar(
 
     fun txtBtn(
         txt: String,
-        color: Int = defBtnColor,
+        color: Int = ctx.primaryColor,
         size: Int = defTxtBtnSize,
         typeface: Typeface = Typeface.DEFAULT_BOLD,
         gravity: Int = Gravity.END,
@@ -392,18 +375,14 @@ class TitleBar(
         var defBackResId = R.drawable.abc_ic_ab_back_material
         var defBackColor = Color.parseColor("#333333")
         var defTxtBtnSize = 14.sp
-        var defBtnColor = -1
-            get() {
-                if (field == -1) field = Res.primaryColor
-                return field
-            }
+        var defBtnColor = Color.parseColor("#333333")
     }
 
 }
 
 @BindingAdapter("simpleAdapter")
-fun setSimpleAdapter(recyclerView: RecyclerView,simpleAdapter: SimpleRecyclerAdapter?){
-    if(simpleAdapter == null) return
+fun setSimpleAdapter(recyclerView: RecyclerView, simpleAdapter: SimpleRecyclerAdapter?) {
+    if (simpleAdapter == null) return
     recyclerView.layoutManager = LinearLayoutManager(recyclerView.context).apply {
         orientation = LinearLayoutManager.VERTICAL
     }
@@ -448,255 +427,5 @@ class SimpleRecyclerAdapter(
     }
 }
 
-abstract class KDialog(
-    protected val ctx: Context,
-    protected val type: Type = Type.CENTER,
-    protected val cancelable: Boolean = true,
-    private val backgroundColor: Int = Color.argb(80, 0, 0, 0),
-    private val layoutType: LayoutType
-) {
-    private var status = 0
-    private lateinit var rootView: FrameLayout
-    private lateinit var dialogView: View
-    private lateinit var backgroundView: View
-    private var postCancel = false
 
-    private fun createBackgroundView(): View {
-        val groundView = View(ctx)
-        val backgroundParams = FrameLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
-        )
-        groundView.layoutParams = backgroundParams
-        groundView.setBackgroundColor(backgroundColor)
-        groundView.isClickable = true
-        if (cancelable) groundView.setOnClickListener { cancel() }
-        return groundView
-    }
-
-    fun show() {
-        rootView = (ctx as Activity).window.decorView.findViewById(android.R.id.content)
-        backgroundView = createBackgroundView()
-        dialogView = createDialog()
-        if (status != 1) return
-        ctx.hideKeyboard()
-        ctx.clearFocus()
-        status = 2
-        when (type) {
-            Type.CENTER -> showCenterDialog()
-            Type.BOTTOM -> showBottomDialog()
-        }
-    }
-
-    private fun showBottomDialog() {
-        val inAnimator: ValueAnimator = getBottomInAnimator()
-        inAnimator.addListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationStart(animation: Animator, isReverse: Boolean) {
-                super.onAnimationStart(animation, isReverse)
-                dialogView.translationY = dialogView.height.toFloat()
-                rootView.addView(backgroundView)
-                backgroundView.elevation = Float.MAX_VALUE - 1
-                rootView.addView(dialogView)
-                dialogView.elevation = Float.MAX_VALUE
-                onShowStart()
-            }
-
-            override fun onAnimationEnd(animation: Animator, isReverse: Boolean) {
-                super.onAnimationEnd(animation, isReverse)
-                backgroundView.alpha = 1f
-                dialogView.translationY = 0f
-                status = 3
-                onShowEnd()
-                if (postCancel) cancel()
-            }
-        })
-        inAnimator.start()
-    }
-
-    private fun showCenterDialog() {
-        val inAnimator: ValueAnimator = getCenterInAnimator()
-        inAnimator.addListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationStart(animation: Animator, isReverse: Boolean) {
-                super.onAnimationStart(animation, isReverse)
-                dialogView.pivotX = dialogView.width.toFloat() / 2
-                dialogView.pivotY = dialogView.height.toFloat() / 2
-                dialogView.scaleX = 0.8.toFloat()
-                dialogView.scaleY = 0.8.toFloat()
-                backgroundView.setAlpha(0f)
-                dialogView.alpha = 0f
-                rootView.addView(backgroundView)
-                backgroundView.elevation = Float.MAX_VALUE - 1
-                rootView.addView(dialogView)
-                dialogView.elevation = Float.MAX_VALUE
-                onShowStart()
-            }
-
-            override fun onAnimationEnd(animation: Animator, isReverse: Boolean) {
-                super.onAnimationEnd(animation, isReverse)
-                backgroundView.setAlpha(1f)
-                dialogView.scaleX = 1f
-                dialogView.scaleY = 1f
-                dialogView.alpha = 1f
-                status = 3
-                onShowEnd()
-                if (postCancel) cancel()
-            }
-        })
-        inAnimator.start()
-    }
-
-
-    protected open fun getCenterInAnimator(): ValueAnimator {
-        val animator = ValueAnimator.ofFloat(0f, 1f)
-        animator.duration = 300
-        animator.interpolator = DecelerateInterpolator()
-        animator.addUpdateListener { animation: ValueAnimator ->
-            val pos = animation.animatedValue as Float
-            dialogView.pivotX = dialogView.width.toFloat() / 2
-            dialogView.pivotY = dialogView.height.toFloat() / 2
-            dialogView.scaleX = (0.2 * pos + 0.8).toFloat()
-            dialogView.scaleY = (0.2 * pos + 0.8).toFloat()
-            backgroundView.alpha = pos
-            dialogView.alpha = pos
-        }
-        return animator
-    }
-
-    protected open fun getCenterOutAnimator(): ValueAnimator {
-        val animator = ValueAnimator.ofFloat(1f, 0f)
-        animator.duration = 100
-        animator.interpolator = LinearInterpolator()
-        animator.addUpdateListener { animation: ValueAnimator ->
-            val pos = animation.animatedValue as Float
-            backgroundView.alpha = pos
-            dialogView.alpha = pos
-        }
-        return animator
-    }
-
-    protected open fun getBottomInAnimator(): ValueAnimator {
-        val animator = ValueAnimator.ofFloat(0f, 1f)
-        animator.duration = 300
-        animator.interpolator = DecelerateInterpolator()
-        animator.addUpdateListener { animation: ValueAnimator ->
-            val pos = animation.animatedValue as Float
-            dialogView.translationY = dialogView.height - dialogView.height * pos
-            backgroundView.alpha = pos
-            dialogView.alpha = pos
-        }
-        return animator
-    }
-
-    protected open fun getBottomOutAnimator(): ValueAnimator {
-        val animator = ValueAnimator.ofFloat(1f, 0f)
-        animator.duration = 200
-        animator.interpolator = LinearInterpolator()
-        animator.addUpdateListener { animation: ValueAnimator ->
-            val pos = animation.animatedValue as Float
-            dialogView.translationY = dialogView.height - dialogView.height * pos
-            backgroundView.alpha = pos
-            dialogView.alpha = pos
-        }
-        return animator
-    }
-
-    fun cancel() {
-        if (status != 3) {
-            postCancel = true
-            return
-        }
-        status = 4
-        Handler(ctx.getMainLooper()).post(Runnable {
-            onCancelStart()
-            when (type) {
-                Type.CENTER -> cancelCenterDialog()
-                Type.BOTTOM -> cancelBottomDialog()
-            }
-        })
-    }
-
-    open fun onCancelStart() {
-    }
-
-    open fun onCancelEnd() {
-        ctx.hideKeyboard()
-    }
-
-    open fun onShowEnd() {
-    }
-
-    open fun onShowStart() {
-    }
-
-    private fun cancelCenterDialog() {
-        val outAnimator = getCenterOutAnimator()
-        outAnimator.addListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationStart(animation: Animator, isReverse: Boolean) {
-                super.onAnimationStart(animation, isReverse)
-            }
-
-            override fun onAnimationEnd(animation: Animator, isReverse: Boolean) {
-                super.onAnimationEnd(animation, isReverse)
-                rootView.removeView(dialogView)
-                rootView.removeView(backgroundView)
-                status = 5
-                onCancelEnd()
-            }
-        })
-        outAnimator.start()
-    }
-
-    private fun cancelBottomDialog() {
-        val outAnimator = getBottomOutAnimator()
-        outAnimator.addListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationStart(animation: Animator, isReverse: Boolean) {
-                super.onAnimationStart(animation, isReverse)
-            }
-
-            override fun onAnimationEnd(animation: Animator, isReverse: Boolean) {
-                super.onAnimationEnd(animation, isReverse)
-                rootView.removeView(dialogView)
-                rootView.removeView(backgroundView)
-                status = 5
-                onCancelEnd()
-            }
-        })
-        outAnimator.start()
-    }
-
-
-    private fun createDialog(): View {
-        val diaView = createView()
-        diaView.layoutParams = if (layoutType.marginT > 0 || layoutType.marginB > 0) {
-            FrameLayout.LayoutParams(layoutType.width, layoutType.height, Gravity.CENTER_HORIZONTAL).apply {
-                if (layoutType.marginT > 0) topMargin = layoutType.marginT
-                else bottomMargin = layoutType.marginB
-            }
-        } else if (layoutType.marginL > 0 || layoutType.marginR > 0) {
-            FrameLayout.LayoutParams(layoutType.width, layoutType.height, Gravity.CENTER_VERTICAL).apply {
-                if (layoutType.marginL > 0) leftMargin = layoutType.marginL
-                else rightMargin = layoutType.marginR
-            }
-        } else {
-            FrameLayout.LayoutParams(layoutType.width, layoutType.height, Gravity.CENTER)
-        }
-        diaView.isClickable = true
-        status = 1
-        return diaView
-    }
-
-    abstract fun createView(): View
-
-    data class LayoutType(
-        var height: Int = ViewGroup.LayoutParams.WRAP_CONTENT,
-        var width: Int = ViewGroup.LayoutParams.WRAP_CONTENT,
-        var marginT: Int = 0,
-        var marginB: Int = 0,
-        var marginL: Int = 0,
-        var marginR: Int = 0,
-    )
-
-    enum class Type {
-        CENTER, BOTTOM
-    }
-}
 
