@@ -3,4 +3,19 @@
           package="me.kujio.android.kandroidutils">
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
+    <application>
+        <activity
+                android:name=".CrashCatcherActivity"
+                android:exported="true"/>
+
+        <provider
+                android:name=".KAndroidUtilsInitProvider"
+                android:authorities="${applicationId}.kandroidutils-init-provider"
+                android:enabled="true"
+                android:exported="false"
+                android:multiprocess="true">
+        </provider>
+    </application>
+
 </manifest>

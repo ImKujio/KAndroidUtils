@@ -2,12 +2,6 @@ package me.kujio.android.kandroidutils
 
 import java.lang.Exception
 
-inline fun <R> tryRun(action: () -> R) = try {
-    action()
-} catch (_: Exception) {
-    null
-}
-
 fun <R> ok(r: R) = Rst.Ok(r)
 
 fun <R> err(msg: String, code: Int = Int.MIN_VALUE, exp: Exception? = null) = Rst.Err<R>(msg, code, exp)

@@ -147,6 +147,7 @@ class KDialog(
                 rootView.removeView(dialogView)
                 status = 5
                 cancelEndAction()
+                context.hideKeyboard()
             }
         })
         outAnimator.start()
@@ -160,6 +161,7 @@ class KDialog(
                 rootView.removeView(dialogView)
                 status = 5
                 cancelEndAction()
+                context.hideKeyboard()
             }
         })
         outAnimator.start()
