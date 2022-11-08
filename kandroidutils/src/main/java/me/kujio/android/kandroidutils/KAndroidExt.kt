@@ -53,6 +53,7 @@ object KAndroidExt {
         CrashCatcher.init(ctx)
         DisPlay.init(ctx)
         Net.init(ctx)
+        DataStore.init(ctx)
     }
 }
 

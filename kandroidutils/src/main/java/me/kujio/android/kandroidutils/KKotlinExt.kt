@@ -2,9 +2,9 @@ package me.kujio.android.kandroidutils
 
 import java.lang.Exception
 
-fun <R> ok(r: R) = Rst.Ok(r)
+fun <R> OK(r: R) = Rst.Ok(r)
 
-fun <R> err(msg: String, code: Int = Int.MIN_VALUE, exp: Exception? = null) = Rst.Err<R>(msg, code, exp)
+fun <R> ERR(msg: String, code: Int = Int.MIN_VALUE, exp: Exception? = null) = Rst.Err<R>(msg, code, exp)
 
 sealed class Rst<T> {
 

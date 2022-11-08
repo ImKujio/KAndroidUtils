@@ -58,34 +58,17 @@ class MainActivity : AppCompatActivity() {
         binding.crashCatch.setOnClickListener {
             throw Exception("测试异常捕获")
         }
+        logd(DataStore.cacheDir.absolutePath)
+        logd(DataStore.filesDir.absolutePath)
     }
 
     override fun onResume() {
         super.onResume()
         logd("onResume")
-        if (!checkPermission(Manifest.permission.BLUETOOTH_SCAN) {
-                if (!it) return@checkPermission
-                Toast.makeText(this, "蓝牙扫描权限被永久关闭", Toast.LENGTH_SHORT).show()
-            }) {
-            return
-        }
-        if (!checkPermission(Manifest.permission.BLUETOOTH_CONNECT){
-                if (!it) return@checkPermission
-                Toast.makeText(this, "蓝牙连接权限被永久关闭", Toast.LENGTH_SHORT).show()
-            }) {
-            return
-        }
-        if (!checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION){
-                if (!it) return@checkPermission
-                Toast.makeText(this, "粗略定位权限被永久关闭", Toast.LENGTH_SHORT).show()
-            }) {
-            return
-        }
-        if (!checkPermission(Manifest.permission.ACCESS_FINE_LOCATION){
-                if (!it) return@checkPermission
-                Toast.makeText(this, "精准定位权限被永久关闭", Toast.LENGTH_SHORT).show()
-            }) {
-            return
-        }
+    }
+
+    override fun onBackPressed() {
+        if (cancelKDialog()) return
+        super.onBackPressed()
     }
 }

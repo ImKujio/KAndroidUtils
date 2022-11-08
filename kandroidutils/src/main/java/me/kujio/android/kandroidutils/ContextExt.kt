@@ -8,6 +8,7 @@ import android.graphics.Color
 import android.util.TypedValue
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import com.hjq.permissions.OnPermissionCallback
 import com.hjq.permissions.XXPermissions
 import java.lang.Exception
@@ -34,14 +35,14 @@ val Context.accentColor: Int
 
 fun Context.checkPermission(
     permissions: String,
-    callback: ((never:Boolean) -> Unit)? = null
+    callback: ((never: Boolean) -> Unit)? = null
 ): Boolean {
     if (this !is Activity) throw Exception("context is not activity")
     if (permissions.isEmpty()) return true
     if (XXPermissions.isGranted(this, permissions)) return true
     XXPermissions.with(this)
         .permission(permissions)
-        .request(object:OnPermissionCallback{
+        .request(object : OnPermissionCallback {
             override fun onGranted(permissions: MutableList<String>?, all: Boolean) {
             }
 
@@ -61,4 +62,12 @@ fun Context.hideKeyboard() {
 fun Context.clearFocus() {
     if (this !is Activity) return
     window.decorView.findViewById<ViewGroup>(android.R.id.content).clearFocus()
+}
+
+fun Context.cancelKDialog(): Boolean {
+    val dialog = KDialog.lastDialog?.get() ?: return false
+    if (!dialog.isShowing) return false
+    if (!dialog.isCancelable) return false
+    dialog.cancel()
+    return true
 }

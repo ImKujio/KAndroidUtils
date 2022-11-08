@@ -18,6 +18,7 @@ import androidx.annotation.ColorInt
 import androidx.annotation.LayoutRes
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
+import java.lang.ref.SoftReference
 import java.util.InputMismatchException
 
 
@@ -45,10 +46,19 @@ class KDialog(
     private lateinit var dialogView: FrameLayout
     private var postCancel = false
 
+    val isShowing: Boolean
+        get() = status in 2..4
+    val isCancelable: Boolean
+        get() = cancelable
+
     private var cancelStartAction: () -> Unit = {}
     private var cancelEndAction: () -> Unit = {}
     private var showStartAction: () -> Unit = {}
     private var showEndAction: () -> Unit = {}
+
+    companion object {
+        var lastDialog: SoftReference<KDialog>? = null
+    }
 
     private fun createDialogView() {
         dialogView = FrameLayout(context)
@@ -85,7 +95,6 @@ class KDialog(
         contentView.isClickable = true
         dialogView.elevation = Float.MAX_VALUE
         dialogView.addView(contentView)
-        rootView.addView(dialogView)
         status = 1
     }
 
@@ -174,6 +183,8 @@ class KDialog(
         context.hideKeyboard()
         context.clearFocus()
         status = 2
+        rootView.addView(dialogView)
+        lastDialog = SoftReference(this)
         when (layoutType) {
             is LayoutType.CenterByPadding, is LayoutType.CenterBySize -> showCenterDialog()
             is LayoutType.BottomByPadding, is LayoutType.BottomBySize -> showBottomDialog()
