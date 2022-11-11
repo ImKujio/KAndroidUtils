@@ -4,7 +4,9 @@
         xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
-
+        <variable
+                name="adapter"
+                type="me.kujio.android.kandroidutils.SimpleRecyclerAdapter"/>
     </data>
 
     <LinearLayout
@@ -38,6 +40,19 @@
                 android:id="@+id/crash_catch"
                 android:text="异常捕获"
                 android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <Button
+                android:id="@+id/refresh"
+                android:text="刷新列表"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+                app:simpleAdapter="@{adapter}"
+                app:poolSize="@{15}"
+                app:types="@{1}"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
 
     </LinearLayout>

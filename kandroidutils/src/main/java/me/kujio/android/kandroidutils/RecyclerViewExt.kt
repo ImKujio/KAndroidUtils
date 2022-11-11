@@ -11,8 +11,37 @@ import androidx.recyclerview.widget.RecyclerView
 
 
 @BindingAdapter("simpleAdapter")
-fun setSimpleAdapter(recyclerView: RecyclerView, simpleAdapter: SimpleRecyclerAdapter?) {
+fun setSimpleAdapter(
+    recyclerView: RecyclerView, simpleAdapter: SimpleRecyclerAdapter?
+) {
     if (simpleAdapter == null) return
+    recyclerView.recycledViewPool.setMaxRecycledViews(0, 8)
+    recyclerView.layoutManager = LinearLayoutManager(recyclerView.context).apply {
+        orientation = LinearLayoutManager.VERTICAL
+    }
+    recyclerView.adapter = simpleAdapter
+}
+
+@BindingAdapter("simpleAdapter", "poolSize")
+fun setSimpleAdapter(
+    recyclerView: RecyclerView, simpleAdapter: SimpleRecyclerAdapter?, poolSize: Int = 8
+) {
+    if (simpleAdapter == null) return
+    recyclerView.recycledViewPool.setMaxRecycledViews(0, poolSize)
+    recyclerView.layoutManager = LinearLayoutManager(recyclerView.context).apply {
+        orientation = LinearLayoutManager.VERTICAL
+    }
+    recyclerView.adapter = simpleAdapter
+}
+
+@BindingAdapter("simpleAdapter", "types", "poolSize")
+fun setSimpleAdapter(
+    recyclerView: RecyclerView, simpleAdapter: SimpleRecyclerAdapter?, types: Int = 1, poolSize: Int = 10
+) {
+    if (simpleAdapter == null) return
+    repeat(types) { i ->
+        recyclerView.recycledViewPool.setMaxRecycledViews(i, poolSize)
+    }
     recyclerView.layoutManager = LinearLayoutManager(recyclerView.context).apply {
         orientation = LinearLayoutManager.VERTICAL
     }
