@@ -53,9 +53,14 @@ fun Context.checkPermission(
 }
 
 
-fun Context.startPermissionActivity(context: Context, permissions: String) {
-    XXPermissions.startPermissionActivity(context, permissions)
+fun Context.startPermissionActivity(context: Context, permissions: String? = null) {
+    if (permissions == null){
+        XXPermissions.startPermissionActivity(context)
+    }else{
+        XXPermissions.startPermissionActivity(context,permissions)
+    }
 }
+
 
 fun Context.hideKeyboard() {
     if (this !is Activity) return
