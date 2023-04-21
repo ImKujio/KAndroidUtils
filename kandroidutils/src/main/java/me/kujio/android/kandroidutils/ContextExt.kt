@@ -45,12 +45,16 @@ fun Context.checkPermission(
         .request(object : OnPermissionCallback {
             override fun onGranted(permissions: MutableList<String>?, all: Boolean) {
             }
-
             override fun onDenied(permissions: MutableList<String>?, never: Boolean) {
                 callback?.invoke(never)
             }
         })
     return false
+}
+
+
+fun Context.startPermissionActivity(context: Context, permissions: String) {
+    XXPermissions.startPermissionActivity(context, permissions)
 }
 
 fun Context.hideKeyboard() {

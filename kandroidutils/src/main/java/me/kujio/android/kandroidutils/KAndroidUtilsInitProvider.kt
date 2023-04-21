@@ -14,6 +14,7 @@ class KAndroidUtilsInitProvider : ContentProvider() {
     override fun onCreate(): Boolean {
         val context = context?.applicationContext ?: getContextByReflect()
         KAndroidExt.init(context)
+        logd("KAndroidUtilsInitProvider:onCreate")
         return true
     }
 

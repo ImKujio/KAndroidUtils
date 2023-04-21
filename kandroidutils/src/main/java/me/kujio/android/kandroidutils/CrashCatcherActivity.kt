@@ -6,11 +6,12 @@ import android.os.Bundle
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.view.Gravity
+import android.view.ViewGroup
+import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.text.color
-import androidx.databinding.DataBindingUtil
 
 class CrashCatcherActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,7 +23,29 @@ class CrashCatcherActivity : AppCompatActivity() {
         }
         val reportText = report.toTextReport()
         applyImmersive(ThemeType.LIGHT)
-        setContentView(R.layout.activity_crash_catcher)
+        setContentView(ScrollView(this).apply {
+            layoutParams =
+                ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            addView(TextView(this@CrashCatcherActivity).apply {
+                setPadding(20.dp, 20.dp, 20.dp, 20.dp)
+                setTextColor(Color.parseColor("#7E7E7E"))
+                textSize = 14f
+                text = SpannableStringBuilder().run {
+                    val valueColor = Color.parseColor("#C15151")
+                    reportText.lines().forEach { line ->
+                        val index = line.indexOf("：")
+                        val name = if (index == -1) "" else line.substring(0, index + 1)
+                        val value = if (index == -1) line else line.substring(index + 1)
+                        append(name)
+                        color(valueColor) {
+                            append(value)
+                        }
+                        append("\n")
+                    }
+                    SpannableString.valueOf(this)
+                }
+            })
+        })
         applyTitleBar {
             title("似乎发生了异常", Gravity.START, color = Color.RED)
             txtBtn("报告给开发者") {
@@ -34,20 +57,5 @@ class CrashCatcherActivity : AppCompatActivity() {
                 startActivity(Intent.createChooser(intent, "报告给："))
             }
         }
-        findViewById<TextView>(R.id.info).text = SpannableStringBuilder().run {
-            val valueColor = Color.parseColor("#C15151")
-            reportText.lines().forEach { line ->
-                val index = line.indexOf("：")
-                val name = if (index == -1) "" else line.substring(0, index + 1)
-                val value = if (index == -1) line else line.substring(index + 1)
-                append(name)
-                color(valueColor) {
-                    append(value)
-                }
-                append("\n")
-            }
-            SpannableString.valueOf(this)
-        }
-
     }
 }
