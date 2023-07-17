@@ -5,7 +5,7 @@ import android.content.SharedPreferences
 import android.content.res.AssetManager
 import java.io.File
 
-object DataStore {
+object KStore {
     lateinit var assets: AssetManager; private set
     lateinit var kvStore: SharedPreferences; private set
     lateinit var filesDir: File; private set

@@ -4,7 +4,7 @@ import android.content.Context
 import android.os.Build
 import android.provider.Settings
 
-object Device {
+object KDevice {
     var androidId = ""; private set
     var androidVer = 0; private set
     var androidVerName = ""; private set

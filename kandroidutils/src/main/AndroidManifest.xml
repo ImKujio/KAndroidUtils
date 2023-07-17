@@ -6,11 +6,11 @@
 
     <application>
         <activity
-                android:name=".CrashCatcherActivity"
+                android:name=".KCrashActivity"
                 android:exported="true"/>
 
         <provider
-                android:name=".KAndroidUtilsInitProvider"
+                android:name=".KInitProvider"
                 android:authorities="${applicationId}.kandroidutils-init-provider"
                 android:enabled="true"
                 android:exported="false"

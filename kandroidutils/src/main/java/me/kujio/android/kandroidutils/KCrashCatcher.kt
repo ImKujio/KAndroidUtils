@@ -13,7 +13,8 @@ object CrashCatcher : Thread.UncaughtExceptionHandler {
     private lateinit var context: Context
 
     override fun uncaughtException(t: Thread, e: Throwable) {
-        Intent(context, CrashCatcherActivity::class.java).apply {
+        e.printStackTrace()
+        Intent(context, KCrashActivity::class.java).apply {
             var exp: Throwable = e
             while (exp.cause != null) {
                 exp = exp.cause!!
@@ -54,23 +55,23 @@ data class CrashReport(
 ) : Parcelable {
     companion object {
         fun parse(e: Throwable): CrashReport {
-            val ele = e.stackTrace.firstOrNull { it.className.contains(App.packageName) } ?: run {
+            val ele = e.stackTrace.firstOrNull { it.className.contains(KApp.packageName) } ?: run {
                 e.stackTrace[0]
             }
             return CrashReport(
                 expMsg = e.message ?: "未知",
-                packageName = App.packageName,
+                packageName = KApp.packageName,
                 className = ele.className,
                 funName = ele.methodName,
                 lineNum = ele.lineNumber.toString(),
                 expType = e::class.java.name,
                 expTime = Calendar.getInstance().format("yyyy-MM-dd HH:mm:ss"),
-                deviceName = Device.name,
-                brandName = Device.brand,
-                androidVer = Device.androidVerName,
-                cpuABI = Device.cpuAbi,
-                versionCode = App.versionCode.toString(),
-                versionName = App.versionName,
+                deviceName = KDevice.name,
+                brandName = KDevice.brand,
+                androidVer = KDevice.androidVerName,
+                cpuABI = KDevice.cpuAbi,
+                versionCode = KApp.versionCode.toString(),
+                versionName = KApp.versionName,
                 stackTrace = e.report()
             )
         }

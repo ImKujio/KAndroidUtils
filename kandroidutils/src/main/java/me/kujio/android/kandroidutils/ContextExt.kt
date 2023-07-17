@@ -8,30 +8,33 @@ import android.graphics.Color
 import android.util.TypedValue
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
-import android.widget.Toast
 import com.hjq.permissions.OnPermissionCallback
 import com.hjq.permissions.XXPermissions
-import java.lang.Exception
-import java.util.StringJoiner
 
 val Context.primaryColor: Int
-    get() = tryRun {
+    get() = try {
         TypedValue().apply {
             theme.resolveAttribute(R.attr.colorPrimary, this, true)
         }.data
-    } ?: Color.BLACK
+    } catch (_: Exception) {
+        Color.BLACK
+    }
 val Context.secondaryColor: Int
-    @SuppressLint("InlinedApi") get() = tryRun {
+    @SuppressLint("InlinedApi") get() = try {
         TypedValue().apply {
             theme.resolveAttribute(R.attr.colorSecondary, this, true)
         }.data
-    } ?: Color.GRAY
+    } catch (_:Exception){
+        Color.GRAY
+    }
 val Context.accentColor: Int
-    get() = tryRun {
+    get() = try {
         TypedValue().apply {
             theme.resolveAttribute(R.attr.colorAccent, this, true)
         }.data
-    } ?: Color.RED
+    } catch (_:Exception){
+        Color.RED
+    }
 
 fun Context.checkPermission(
     permissions: String,
@@ -45,6 +48,7 @@ fun Context.checkPermission(
         .request(object : OnPermissionCallback {
             override fun onGranted(permissions: MutableList<String>?, all: Boolean) {
             }
+
             override fun onDenied(permissions: MutableList<String>?, never: Boolean) {
                 callback?.invoke(never)
             }
@@ -54,13 +58,12 @@ fun Context.checkPermission(
 
 
 fun Context.startPermissionActivity(context: Context, permissions: String? = null) {
-    if (permissions == null){
+    if (permissions == null) {
         XXPermissions.startPermissionActivity(context)
-    }else{
-        XXPermissions.startPermissionActivity(context,permissions)
+    } else {
+        XXPermissions.startPermissionActivity(context, permissions)
     }
 }
-
 
 fun Context.hideKeyboard() {
     if (this !is Activity) return
@@ -70,13 +73,5 @@ fun Context.hideKeyboard() {
 
 fun Context.clearFocus() {
     if (this !is Activity) return
-    window.decorView.findViewById<ViewGroup>(android.R.id.content).clearFocus()
-}
-
-fun Context.cancelKDialog(): Boolean {
-    val dialog = KDialog.lastDialog?.get() ?: return false
-    if (!dialog.isShowing) return false
-    if (!dialog.isCancelable) return false
-    dialog.cancel()
-    return true
+    window.decorView.findViewById<ViewGroup>(R.id.content).clearFocus()
 }

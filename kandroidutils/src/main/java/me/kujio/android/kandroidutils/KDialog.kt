@@ -1,275 +1,171 @@
 package me.kujio.android.kandroidutils
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
-import android.animation.ValueAnimator
-import android.app.Activity
-import android.content.Context
 import android.graphics.Color
-import android.os.Handler
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.DecelerateInterpolator
-import android.view.animation.LinearInterpolator
 import android.widget.FrameLayout
+import androidx.activity.OnBackPressedCallback
 import androidx.annotation.ColorInt
 import androidx.annotation.LayoutRes
+import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
-import java.lang.ref.SoftReference
-import java.util.InputMismatchException
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 
-fun Context.showDialog(
-    @LayoutRes layoutResId: Int,
-    layoutType: KDialog.LayoutType,
-    cancelable: Boolean = true,
-    @ColorInt backgroundColor: Int = Color.argb(80, 0, 0, 0),
-    bindAction: KDialog.(binding: ViewDataBinding) -> Unit
+abstract class KDialog(
+    protected val activity: AppCompatActivity,
+    @LayoutRes protected val layoutResId: Int,
+    protected val layoutType: LayoutType,
+    @ColorInt protected val backgroundColor: Int = Color.argb(80, 0, 0, 0),
 ) {
-    KDialog(this, layoutResId, layoutType, cancelable, backgroundColor, bindAction).show()
-}
-
-class KDialog(
-    val context: Context,
-    @LayoutRes val layoutResId: Int,
-    private val layoutType: LayoutType,
-    private val cancelable: Boolean = true,
-    @ColorInt val backgroundColor: Int = Color.argb(80, 0, 0, 0),
-    val bindAction: KDialog.(binding: ViewDataBinding) -> Unit
-) {
-    private var status = 0
-    private lateinit var rootView: FrameLayout
-    private lateinit var contentView: View
-    private lateinit var dialogView: FrameLayout
-    private var postCancel = false
-
-    val isShowing: Boolean
-        get() = status in 2..4
-    val isCancelable: Boolean
-        get() = cancelable
-
-    private var cancelStartAction: () -> Unit = {}
-    private var cancelEndAction: () -> Unit = {}
-    private var showStartAction: () -> Unit = {}
-    private var showEndAction: () -> Unit = {}
-
-    companion object {
-        var lastDialog: SoftReference<KDialog>? = null
-    }
-
-    private fun createDialogView() {
-        dialogView = FrameLayout(context)
-        dialogView.layoutParams = FrameLayout.LayoutParams(
+    private var status = 1
+    private val rootView: FrameLayout = activity.window.decorView.findViewById(android.R.id.content)
+    private val coverView: FrameLayout = FrameLayout(activity).apply {
+        layoutParams = FrameLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
         )
-        dialogView.setBackgroundColor(backgroundColor)
-        if (cancelable) dialogView.setOnClickListener { cancel() }
-        contentView =
-            DataBindingUtil.inflate<ViewDataBinding>(LayoutInflater.from(context), layoutResId, rootView, false).apply {
-                bindAction(this)
-            }.root
-        contentView.layoutParams = when (layoutType) {
-            is LayoutType.CenterBySize -> FrameLayout.LayoutParams(layoutType.width, layoutType.height, Gravity.CENTER)
-            is LayoutType.BottomBySize -> FrameLayout.LayoutParams(layoutType.width, layoutType.height, Gravity.BOTTOM)
-            is LayoutType.CenterByPadding -> FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
-            ).also {
-                dialogView.setPadding(
-                    layoutType.paddingLeft, layoutType.paddingTop, layoutType.paddingRight, layoutType.paddingBottom
-                )
-            }
+        visibility = View.GONE
+        isClickable = true
+        elevation = Float.MAX_VALUE
+        setBackgroundColor(backgroundColor)
+    }
 
-            is LayoutType.BottomByPadding -> FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
-            ).also {
-                dialogView.setPadding(
-                    layoutType.paddingLeft, layoutType.paddingTop, layoutType.paddingRight, layoutType.paddingBottom
+    private val dialogView =
+        DataBindingUtil.inflate<ViewDataBinding>(LayoutInflater.from(activity), layoutResId, rootView, false).apply {
+            onViewBinding(this)
+            root.layoutParams = when (layoutType) {
+                is LayoutType.CenterBySize -> FrameLayout.LayoutParams(
+                    layoutType.width,
+                    layoutType.height,
+                    Gravity.CENTER
                 )
+
+                is LayoutType.BottomBySize -> FrameLayout.LayoutParams(
+                    layoutType.width,
+                    layoutType.height,
+                    Gravity.BOTTOM
+                )
+
+                is LayoutType.CenterByPadding -> FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
+                ).also {
+                    coverView.setPadding(
+                        layoutType.paddingLeft, layoutType.paddingTop, layoutType.paddingRight, layoutType.paddingBottom
+                    )
+                }
+
+                is LayoutType.BottomByPadding -> FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
+                ).also {
+                    coverView.setPadding(
+                        layoutType.paddingLeft, layoutType.paddingTop, layoutType.paddingRight, layoutType.paddingBottom
+                    )
+                }
             }
+            coverView.addView(root)
+        }.root
+
+
+    protected abstract fun onViewBinding(binding: ViewDataBinding)
+
+    private suspend fun showBottomDialog() = suspendCoroutine { continuation ->
+        dialogView.translationY = dialogView.height.toFloat()
+        coverView.alpha = 0f
+        coverView.visibility = View.VISIBLE
+        animatorDecelerate {
+            dialogView.translationY = dialogView.height - dialogView.height * it
+            coverView.alpha = it
+
+            if (it != 1f) return@animatorDecelerate
+            coverView.alpha = 1f
+            dialogView.translationY = 0f
+            status = 3
+            continuation.resume(Unit)
         }
-        dialogView.visibility = View.GONE
-        dialogView.isClickable = true
-        contentView.isClickable = true
-        dialogView.elevation = Float.MAX_VALUE
-        dialogView.addView(contentView)
-        status = 1
     }
 
-    private fun showBottomDialog() {
-        val inAnimator: ValueAnimator = getBottomInAnimator()
-        inAnimator.addListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationStart(animation: Animator, isReverse: Boolean) {
-                super.onAnimationStart(animation, isReverse)
-                contentView.translationY = contentView.height.toFloat()
-                dialogView.alpha = 0f
-                dialogView.visibility = View.VISIBLE
-                showStartAction()
-            }
+    private suspend fun showCenterDialog() = suspendCoroutine { continuation ->
+        dialogView.pivotX = dialogView.width.toFloat() / 2
+        dialogView.pivotY = dialogView.height.toFloat() / 2
+        dialogView.scaleX = 0.8.toFloat()
+        dialogView.scaleY = 0.8.toFloat()
+        coverView.alpha = 0f
+        coverView.visibility = View.VISIBLE
+        animatorDecelerate {
+            dialogView.pivotX = dialogView.width.toFloat() / 2
+            dialogView.pivotY = dialogView.height.toFloat() / 2
+            dialogView.scaleX = (0.2 * it + 0.8).toFloat()
+            dialogView.scaleY = (0.2 * it + 0.8).toFloat()
+            coverView.alpha = it
 
-            override fun onAnimationEnd(animation: Animator, isReverse: Boolean) {
-                super.onAnimationEnd(animation, isReverse)
-                dialogView.alpha = 1f
-                contentView.translationY = 0f
-                status = 3
-                showEndAction()
-                if (postCancel) cancel()
-            }
-        })
-        inAnimator.start()
+            if (it != 1f) return@animatorDecelerate
+            coverView.alpha = 1f
+            dialogView.scaleX = 1f
+            dialogView.scaleY = 1f
+            status = 3
+            continuation.resume(Unit)
+        }
     }
 
-    private fun showCenterDialog() {
-        val inAnimator: ValueAnimator = getCenterInAnimator()
-        inAnimator.addListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationStart(animation: Animator, isReverse: Boolean) {
-                super.onAnimationStart(animation, isReverse)
-                contentView.pivotX = contentView.width.toFloat() / 2
-                contentView.pivotY = contentView.height.toFloat() / 2
-                contentView.scaleX = 0.8.toFloat()
-                contentView.scaleY = 0.8.toFloat()
-                dialogView.alpha = 0f
-                dialogView.visibility = View.VISIBLE
-                showStartAction()
-            }
-
-            override fun onAnimationEnd(animation: Animator, isReverse: Boolean) {
-                super.onAnimationEnd(animation, isReverse)
-                dialogView.setAlpha(1f)
-                contentView.scaleX = 1f
-                contentView.scaleY = 1f
-                status = 3
-                showEndAction()
-                if (postCancel) cancel()
-            }
-        })
-        inAnimator.start()
+    private suspend fun cancelCenterDialog() = suspendCoroutine { continuation ->
+        activity.hideKeyboard()
+        animatorDecelerate(1f, 0f, 100) {
+            coverView.alpha = it
+            if (it != 0f) return@animatorDecelerate
+            rootView.removeView(coverView)
+            status = 5
+            continuation.resume(Unit)
+        }
     }
 
-    private fun cancelCenterDialog() {
-        val outAnimator = getCenterOutAnimator()
-        outAnimator.addListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationEnd(animation: Animator, isReverse: Boolean) {
-                super.onAnimationEnd(animation, isReverse)
-                rootView.removeView(dialogView)
-                status = 5
-                cancelEndAction()
-                context.hideKeyboard()
-            }
-        })
-        outAnimator.start()
+    private suspend fun cancelBottomDialog() = suspendCoroutine { continuation ->
+        activity.hideKeyboard()
+        animatorDecelerate(1f, 0f, 200) {
+            dialogView.translationY = dialogView.height - dialogView.height * it
+            coverView.alpha = it
+
+            if (it != 0f) return@animatorDecelerate
+            rootView.removeView(coverView)
+            status = 5
+            continuation.resume(Unit)
+        }
     }
 
-    private fun cancelBottomDialog() {
-        val outAnimator = getBottomOutAnimator()
-        outAnimator.addListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationEnd(animation: Animator, isReverse: Boolean) {
-                super.onAnimationEnd(animation, isReverse)
-                rootView.removeView(dialogView)
-                status = 5
-                cancelEndAction()
-                context.hideKeyboard()
-            }
-        })
-        outAnimator.start()
-    }
-
-    fun show() {
-        rootView = (context as Activity).window.decorView.findViewById(android.R.id.content)
-        createDialogView()
+    suspend fun show() {
         if (status != 1) return
-        context.hideKeyboard()
-        context.clearFocus()
+        activity.hideKeyboard()
+        activity.clearFocus()
         status = 2
-        rootView.addView(dialogView)
-        lastDialog = SoftReference(this)
+        rootView.addView(coverView)
         when (layoutType) {
             is LayoutType.CenterByPadding, is LayoutType.CenterBySize -> showCenterDialog()
             is LayoutType.BottomByPadding, is LayoutType.BottomBySize -> showBottomDialog()
         }
-    }
-
-    fun cancel() {
-        if (status != 3) {
-            postCancel = true
-            return
-        }
-        status = 4
-        Handler(context.mainLooper).post {
-            cancelStartAction()
-            when (layoutType) {
-                is LayoutType.CenterBySize, is LayoutType.CenterByPadding -> cancelCenterDialog()
-                is LayoutType.BottomBySize, is LayoutType.BottomByPadding -> cancelBottomDialog()
+        activity.onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (status != 4) cancelAsync()
+                else isEnabled = false
             }
+        })
+    }
+
+    suspend fun cancel() {
+        if (status != 3) return
+        status = 4
+        when (layoutType) {
+            is LayoutType.CenterBySize, is LayoutType.CenterByPadding -> cancelCenterDialog()
+            is LayoutType.BottomBySize, is LayoutType.BottomByPadding -> cancelBottomDialog()
         }
     }
 
-    fun onCancelStart(action: () -> Unit) {
-        cancelStartAction = action
-    }
-
-    fun onCancelEnd(action: () -> Unit) {
-        cancelEndAction = action
-    }
-
-    fun onShowEnd(action: () -> Unit) {
-        showEndAction = action
-    }
-
-    fun onShowStart(action: () -> Unit) {
-        showStartAction = action
-    }
-
-    private fun getCenterInAnimator(): ValueAnimator {
-        val animator = ValueAnimator.ofFloat(0f, 1f)
-        animator.duration = 300
-        animator.interpolator = DecelerateInterpolator()
-        animator.addUpdateListener { animation: ValueAnimator ->
-            val pos = animation.animatedValue as Float
-            contentView.pivotX = contentView.width.toFloat() / 2
-            contentView.pivotY = contentView.height.toFloat() / 2
-            contentView.scaleX = (0.2 * pos + 0.8).toFloat()
-            contentView.scaleY = (0.2 * pos + 0.8).toFloat()
-            dialogView.alpha = pos
-        }
-        return animator
-    }
-
-    private fun getCenterOutAnimator(): ValueAnimator {
-        val animator = ValueAnimator.ofFloat(1f, 0f)
-        animator.duration = 100
-        animator.interpolator = LinearInterpolator()
-        animator.addUpdateListener { animation: ValueAnimator ->
-            val pos = animation.animatedValue as Float
-            dialogView.alpha = pos
-        }
-        return animator
-    }
-
-    private fun getBottomInAnimator(): ValueAnimator {
-        val animator = ValueAnimator.ofFloat(0f, 1f)
-        animator.duration = 300
-        animator.interpolator = DecelerateInterpolator()
-        animator.addUpdateListener { animation: ValueAnimator ->
-            val pos = animation.animatedValue as Float
-            contentView.translationY = contentView.height - contentView.height * pos
-            dialogView.alpha = pos
-        }
-        return animator
-    }
-
-    private fun getBottomOutAnimator(): ValueAnimator {
-        val animator = ValueAnimator.ofFloat(1f, 0f)
-        animator.duration = 200
-        animator.interpolator = LinearInterpolator()
-        animator.addUpdateListener { animation: ValueAnimator ->
-            val pos = animation.animatedValue as Float
-            contentView.translationY = contentView.height - contentView.height * pos
-            dialogView.alpha = pos
-        }
-        return animator
+    fun cancelAsync() = activity.lifecycleScope.launch {
+        cancel()
     }
 
     sealed interface LayoutType {

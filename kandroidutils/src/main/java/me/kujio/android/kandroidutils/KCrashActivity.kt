@@ -13,7 +13,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.text.color
 
-class CrashCatcherActivity : AppCompatActivity() {
+class KCrashActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val report = intent.getParcelableExtra<CrashReport>("CrashReport") ?: run {
@@ -26,7 +26,7 @@ class CrashCatcherActivity : AppCompatActivity() {
         setContentView(ScrollView(this).apply {
             layoutParams =
                 ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-            addView(TextView(this@CrashCatcherActivity).apply {
+            addView(TextView(this@KCrashActivity).apply {
                 setPadding(20.dp, 20.dp, 20.dp, 20.dp)
                 setTextColor(Color.parseColor("#7E7E7E"))
                 textSize = 14f

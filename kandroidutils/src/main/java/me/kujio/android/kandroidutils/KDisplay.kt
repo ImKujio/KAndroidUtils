@@ -1,9 +1,20 @@
 package me.kujio.android.kandroidutils
 
+import android.R
 import android.content.Context
 import android.content.res.Resources
 import android.os.Build
 import android.util.TypedValue
+
+
+val Int.dp: Int; get() = (DisPlay.dpUnit * this).toInt()
+
+val Int.sp: Int; get() = (DisPlay.spUnit * this).toInt()
+
+val Float.dp: Float; get() = DisPlay.dpUnit * this
+
+val Float.sp: Float; get() = DisPlay.spUnit * this
+
 
 object DisPlay {
     var width = 0; private set
@@ -11,13 +22,15 @@ object DisPlay {
     var statusBar = 0; private set
     var dpUnit = 0f; private set
     var spUnit = 0f; private set
+    var animationDuration = 0L; private set
     fun init(ctx: Context) {
         val dm = ctx.resources.displayMetrics
         width = dm.widthPixels
         height = dm.heightPixels
         dpUnit = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1f, dm)
         spUnit = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 1f, dm)
-        statusBar = tryRun {
+        animationDuration = ctx.resources.getInteger(R.integer.config_mediumAnimTime).toLong()
+        statusBar = try {
             val id = Resources.getSystem().getIdentifier("status_bar_height", "dimen", "android")
             if (id <= 0) throw Exception()
             val s1 = ctx.resources.getDimensionPixelSize(id)
@@ -29,6 +42,8 @@ object DisPlay {
                 val f = s1 * d2 / d1
                 if (f >= 0) (f + 0.5f).toInt() else (f - 0.5f).toInt()
             }
-        } ?: 0
+        } catch (_:Exception){
+            0
+        }
     }
 }

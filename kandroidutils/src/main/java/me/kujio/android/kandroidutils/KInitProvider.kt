@@ -7,27 +7,26 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import android.net.Uri
-import java.lang.NullPointerException
 
-class KAndroidUtilsInitProvider : ContentProvider() {
+class KInitProvider : ContentProvider() {
 
     override fun onCreate(): Boolean {
         val context = context?.applicationContext ?: getContextByReflect()
-        KAndroidExt.init(context)
-        logd("KAndroidUtilsInitProvider:onCreate")
+        Init.init(context)
+        logd { context.packageName.toString() }
         return true
     }
 
     @SuppressLint("PrivateApi")
     private fun getContextByReflect(): Context {
-        return tryRun {
+        return try {
             val activityThread = Class.forName("android.app.ActivityThread")
             val thread = activityThread.getMethod("currentActivityThread").invoke(null)
             val app = activityThread.getMethod("getApplication").invoke(thread)
             app?.let { it as Application } ?: run {
                 throw NullPointerException("无法获取Application")
             }
-        } ?: run {
+        } catch (_:Exception) {
             throw NullPointerException("无法获取Application")
         }
     }

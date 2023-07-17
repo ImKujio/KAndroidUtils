@@ -1,4 +1,4 @@
-package me.kujio.android.kandroidutils
+package me.kujio.android.kandroidutils.view
 
 import android.app.Activity
 import android.view.inputmethod.InputMethodManager
