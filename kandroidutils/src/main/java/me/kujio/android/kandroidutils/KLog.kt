@@ -26,7 +26,9 @@ fun logi(simple: Boolean = false, msg: () -> String) {
     else log(Log.INFO, msg())
 }
 
-private val packages = HashSet<String>()
+private val packages = HashSet<String>().apply {
+    add("me.kujio.android.kandroidutils")
+}
 
 fun addLogPackage(pkg: String) {
     packages.add(pkg)

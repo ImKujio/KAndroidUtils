@@ -6,10 +6,7 @@ import android.content.Intent
 import android.os.Parcelable
 import android.os.Process
 import kotlinx.parcelize.Parcelize
-import me.kujio.android.kandroidutils.KApp
-import me.kujio.android.kandroidutils.KDevice
-import me.kujio.android.kandroidutils.format
-import me.kujio.android.kandroidutils.report
+import me.kujio.android.kandroidutils.*
 import java.util.*
 
 @SuppressLint("StaticFieldLeak")
@@ -17,7 +14,7 @@ object CrashCatcher : Thread.UncaughtExceptionHandler {
     private lateinit var context: Context
 
     override fun uncaughtException(t: Thread, e: Throwable) {
-        e.printStackTrace()
+        loge(true){e.report()}
         Intent(context, KCrashActivity::class.java).apply {
             var exp: Throwable = e
             while (exp.cause != null) {

@@ -48,6 +48,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
+        <me.kujio.android.kandroidutils.loading.KCircleLoadingView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
         <androidx.recyclerview.widget.RecyclerView
                 app:simpleAdapter="@{adapter}"
                 app:poolSize="@{15}"
