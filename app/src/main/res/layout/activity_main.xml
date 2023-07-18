@@ -6,7 +6,7 @@
     <data>
         <variable
                 name="adapter"
-                type="me.kujio.android.kandroidutils.view.SimpleRecyclerAdapter"/>
+                type="me.kujio.android.kandroidutils.SimpleRecyclerAdapter"/>
     </data>
 
     <LinearLayout

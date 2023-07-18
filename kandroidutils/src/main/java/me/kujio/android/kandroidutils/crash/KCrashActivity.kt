@@ -1,4 +1,4 @@
-package me.kujio.android.kandroidutils
+package me.kujio.android.kandroidutils.crash
 
 import android.content.Intent
 import android.graphics.Color
@@ -12,6 +12,10 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.text.color
+import me.kujio.android.kandroidutils.ThemeType
+import me.kujio.android.kandroidutils.applyImmersive
+import me.kujio.android.kandroidutils.applyTitleBar
+import me.kujio.android.kandroidutils.dp
 
 class KCrashActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

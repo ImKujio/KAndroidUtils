@@ -6,7 +6,7 @@
 
     <application>
         <activity
-                android:name=".KCrashActivity"
+                android:name=".crash.KCrashActivity"
                 android:exported="true"/>
 
         <provider

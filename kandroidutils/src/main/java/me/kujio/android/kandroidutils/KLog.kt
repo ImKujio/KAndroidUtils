@@ -10,19 +10,19 @@ fun loge(simple: Boolean = false, msg: () -> String) {
 
 fun logw(simple: Boolean = false, msg: () -> String) {
     if (!KApp.debug) return
-    if (simple) logSimple(Log.ERROR,msg())
+    if (simple) logSimple(Log.WARN,msg())
     else log(Log.WARN, msg())
 }
 
 fun logd(simple: Boolean = false, msg: () -> String) {
     if (!KApp.debug) return
-    if (simple) logSimple(Log.ERROR,msg())
+    if (simple) logSimple(Log.DEBUG,msg())
     else log(Log.DEBUG, msg())
 }
 
 fun logi(simple: Boolean = false, msg: () -> String) {
     if (!KApp.debug) return
-    if (simple) logSimple(Log.ERROR,msg())
+    if (simple) logSimple(Log.INFO,msg())
     else log(Log.INFO, msg())
 }
 

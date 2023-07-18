@@ -9,7 +9,6 @@ import kotlinx.coroutines.launch
 import me.kujio.android.kandroidutils.*
 import me.kujio.android.kandroidutils.simple.databinding.ActivityMainBinding
 import me.kujio.android.kandroidutils.simple.databinding.ItemMainBinding
-import me.kujio.android.kandroidutils.view.SimpleRecyclerAdapter
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding

@@ -1,13 +1,26 @@
-package me.kujio.android.kandroidutils.view
+package me.kujio.android.kandroidutils
 
+import android.app.Activity
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+
+fun EditText.showKeyboard() {
+    isFocusable = true
+    isFocusableInTouchMode = true
+    requestFocus()
+    if (context !is Activity) return
+    val imm = context.getSystemService(InputMethodManager::class.java) as InputMethodManager
+    imm.showSoftInput(this, 0)
+}
+
 
 
 @BindingAdapter("simpleAdapter")

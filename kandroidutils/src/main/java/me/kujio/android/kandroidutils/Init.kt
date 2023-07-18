@@ -1,6 +1,7 @@
 package me.kujio.android.kandroidutils
 
 import android.content.Context
+import me.kujio.android.kandroidutils.crash.CrashCatcher
 
 
 /**

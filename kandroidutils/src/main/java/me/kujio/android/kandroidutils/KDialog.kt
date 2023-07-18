@@ -22,9 +22,14 @@ abstract class KDialog(
     protected val activity: AppCompatActivity,
     @LayoutRes protected val layoutResId: Int,
     protected val layoutType: LayoutType,
-    @ColorInt protected val backgroundColor: Int = Color.argb(80, 0, 0, 0),
+    @ColorInt protected val backgroundColor: Int = Color.argb(80, 0, 0, 0)
 ) {
     private var status = 1
+    private val backPressedCallback = object :OnBackPressedCallback(true){
+        override fun handleOnBackPressed() {
+            cancelAsync()
+        }
+    }
     private val rootView: FrameLayout = activity.window.decorView.findViewById(android.R.id.content)
     private val coverView: FrameLayout = FrameLayout(activity).apply {
         layoutParams = FrameLayout.LayoutParams(
@@ -137,27 +142,28 @@ abstract class KDialog(
         }
     }
 
+    open fun onViewAdded(){}
+    open fun onCancel(){}
+
     suspend fun show() {
         if (status != 1) return
         activity.hideKeyboard()
         activity.clearFocus()
         status = 2
         rootView.addView(coverView)
+        onViewAdded()
+        activity.onBackPressedDispatcher.addCallback(backPressedCallback)
         when (layoutType) {
             is LayoutType.CenterByPadding, is LayoutType.CenterBySize -> showCenterDialog()
             is LayoutType.BottomByPadding, is LayoutType.BottomBySize -> showBottomDialog()
         }
-        activity.onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                if (status != 4) cancelAsync()
-                else isEnabled = false
-            }
-        })
     }
 
     suspend fun cancel() {
         if (status != 3) return
         status = 4
+        onCancel()
+        backPressedCallback.isEnabled = false
         when (layoutType) {
             is LayoutType.CenterBySize, is LayoutType.CenterByPadding -> cancelCenterDialog()
             is LayoutType.BottomBySize, is LayoutType.BottomByPadding -> cancelBottomDialog()

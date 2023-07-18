@@ -1,4 +1,4 @@
-package me.kujio.android.kandroidutils
+package me.kujio.android.kandroidutils.crash
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -6,6 +6,10 @@ import android.content.Intent
 import android.os.Parcelable
 import android.os.Process
 import kotlinx.parcelize.Parcelize
+import me.kujio.android.kandroidutils.KApp
+import me.kujio.android.kandroidutils.KDevice
+import me.kujio.android.kandroidutils.format
+import me.kujio.android.kandroidutils.report
 import java.util.*
 
 @SuppressLint("StaticFieldLeak")
@@ -31,7 +35,7 @@ object CrashCatcher : Thread.UncaughtExceptionHandler {
     }
 
     fun init(ctx: Context) {
-        this.context = ctx
+        context = ctx
         Thread.setDefaultUncaughtExceptionHandler(this)
     }
 }
