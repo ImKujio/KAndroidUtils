@@ -48,9 +48,15 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
-        <me.kujio.android.kandroidutils.loading.KCircleLoadingView
+        <me.kujio.android.kandroidutils.loading.KLoadingView
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                app:type="circle"/>
+
+        <me.kujio.android.kandroidutils.loading.KLoadingView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:type="line"/>
 
         <androidx.recyclerview.widget.RecyclerView
                 app:simpleAdapter="@{adapter}"

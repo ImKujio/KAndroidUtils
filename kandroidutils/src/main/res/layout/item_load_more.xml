@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <data>
+
+        <variable
+                name="state"
+                type="Integer"/>
+        <variable
+                name="load"
+                type="android.view.View.OnClickListener"/>
+
+        <import type="android.view.View"/>
+    </data>
+
+    <LinearLayout
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="@{load}"
+            android:clickable="@{state == 3}">
+
+        <me.kujio.android.kandroidutils.loading.KLoadingView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:visibility="@{state == 1 ? View.VISIBLE : View.GONE}"/>
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{state == 1 ? `加载中...` : state == 2 ? `没有更多了` : `加载失败·点击重试`}"/>
+
+    </LinearLayout>
+</layout>

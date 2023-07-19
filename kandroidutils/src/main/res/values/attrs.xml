@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="KCircleLoadingView">
+    <declare-styleable name="KLoadingView">
         <attr name="color" format="color"/>
+        <attr name="type" format="enum">
+            <enum name="line" value="0"/>
+            <enum name="circle" value="1"/>
+        </attr>
     </declare-styleable>
 </resources>
