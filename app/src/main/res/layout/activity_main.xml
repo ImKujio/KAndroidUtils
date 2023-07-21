@@ -6,7 +6,7 @@
     <data>
         <variable
                 name="adapter"
-                type="me.kujio.android.kandroidutils.SimpleRecyclerAdapter"/>
+                type="me.kujio.android.kandroidutils.LoadMoreRecyclerAdapter"/>
     </data>
 
     <LinearLayout
@@ -59,9 +59,7 @@
                 app:type="line"/>
 
         <androidx.recyclerview.widget.RecyclerView
-                app:simpleAdapter="@{adapter}"
-                app:poolSize="@{15}"
-                app:types="@{1}"
+                app:loadMoreAdapter="@{adapter}"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
 

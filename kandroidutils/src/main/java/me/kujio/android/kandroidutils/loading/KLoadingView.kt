@@ -66,7 +66,7 @@ class Line(size: Float, center: PointF, color: Int) : Object(size, center, color
 }
 
 class KLoadingView : View {
-    private val defSize = 24.dp
+    private val defSize = 20.dp
     private lateinit var objects: Array<Object>
     private val count = 8
     private val center: PointF get() = PointF(width / 2f, height / 2f)
@@ -131,11 +131,5 @@ class KLoadingView : View {
         }
     }
 
-    override fun onDetachedFromWindow() {
-        super.onDetachedFromWindow()
-        for (obj in objects) {
-            obj.recycle()
-        }
-    }
 
 }
