@@ -36,7 +36,7 @@ fun addLogPackage(pkg: String) {
 
 private fun logSimple(type: Int, msg: String) {
     val stack = Thread.currentThread().stackTrace
-    val tag = "KLog:" + stack[4].className.split(".").last()
+    val tag = "KLog:" + stack[5].className.split(".").last()
     msg.lines().forEach { line ->
         Log.println(type, tag, line)
     }
@@ -44,12 +44,12 @@ private fun logSimple(type: Int, msg: String) {
 
 private fun log(type: Int, msg: String) {
     val stack = Thread.currentThread().stackTrace
-    val tag = "KLog:" + stack[4].className.split(".").last()
+    val tag = "KLog:" + stack[5].className.split(".").last()
     val size = if (stack.size > 10) 10 else stack.size
     Log.println(
         type, tag, "┌──────────────────────────────────────────────────────────────────────────────────────────────────"
     )
-    (size - 1 downTo 4).forEach print@{ i ->
+    (size - 1 downTo 5).forEach print@{ i ->
         val e = stack[i]
         if (e.isNativeMethod) return@print
         if (e.className.contains(KApp.packageName)) {

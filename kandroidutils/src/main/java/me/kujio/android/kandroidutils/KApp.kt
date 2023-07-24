@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.os.Bundle
 import java.lang.ref.SoftReference
+import java.util.*
 
 object KApp {
     var versionCode = 0; private set
@@ -18,6 +19,12 @@ object KApp {
 
     private var _activity: SoftReference<Activity>? = null
     val curActivity: Activity? get() = _activity?.get()
+
+    private var _onCreatedHook = WeakHashMap<Activity, () -> Unit>()
+
+    fun Activity.onCreated(action: () -> Unit) {
+        _onCreatedHook[this] = action
+    }
 
     fun init(ctx: Context) {
         packageName = ctx.packageName
@@ -36,6 +43,7 @@ object KApp {
         override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
             _application = SoftReference(activity.application)
             _activity = SoftReference(activity)
+            _onCreatedHook[activity]?.let { it() }
         }
 
         override fun onActivityStarted(activity: Activity) {
@@ -59,6 +67,7 @@ object KApp {
         }
 
         override fun onActivityDestroyed(activity: Activity) {
+            _onCreatedHook.remove(activity)
             if (activity == curActivity) {
                 _activity = null
             }

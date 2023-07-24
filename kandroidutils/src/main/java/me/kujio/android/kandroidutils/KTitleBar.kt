@@ -19,6 +19,10 @@ import android.widget.TextView
 import androidx.appcompat.R
 import androidx.core.view.get
 
+
+
+
+
 class KTitleBar(
     private val ctx: Context,
     private val titleBarView: FrameLayout,
@@ -107,8 +111,8 @@ class KTitleBar(
 
         fun apply(
             frameLayout: FrameLayout,
-            height: Int = KTitleBar.defBarHeight,
-            backgroundColor: Int = KTitleBar.defBackgroundColor,
+            height: Int = defBarHeight,
+            backgroundColor: Int = defBackgroundColor,
             background: Drawable? = ColorDrawable(backgroundColor),
             fitBackground: Boolean = true,
             fitStatusBar: Boolean = true,

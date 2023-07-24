@@ -1,6 +1,7 @@
 package me.kujio.android.kandroidutils.simple
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.view.Gravity
 import androidx.appcompat.app.AppCompatActivity
@@ -47,6 +48,11 @@ class MainActivity : AppCompatActivity() {
         binding.crashCatch.setOnClickListener {
             throw Exception("测试异常捕获")
         }
+
+        binding.constraintLoad.setOnClickListener {
+            startActivity(Intent(this,ConstraintLoadActivity::class.java))
+        }
+
         logd { KStore.cacheDir.absolutePath }
         logd { KStore.filesDir.absolutePath }
         binding.adapter = loadMoreRecyclerAdapter

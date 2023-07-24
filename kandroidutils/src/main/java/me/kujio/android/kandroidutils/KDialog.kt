@@ -74,6 +74,8 @@ abstract class KDialog(
                 }
             }
             coverView.addView(root)
+            rootView.addView(coverView)
+            coverView.visibility = View.GONE
         }.root
 
 
@@ -83,7 +85,7 @@ abstract class KDialog(
         dialogView.translationY = dialogView.height.toFloat()
         coverView.alpha = 0f
         coverView.visibility = View.VISIBLE
-        animatorDecelerate {
+        animatorDecelerate(duration = DisPlay.animationDuration ) {
             dialogView.translationY = dialogView.height - dialogView.height * it
             coverView.alpha = it
 
@@ -142,7 +144,6 @@ abstract class KDialog(
         }
     }
 
-    open fun onViewAdded(){}
     open fun onCancel(){}
 
     suspend fun show() {
@@ -150,8 +151,6 @@ abstract class KDialog(
         activity.hideKeyboard()
         activity.clearFocus()
         status = 2
-        rootView.addView(coverView)
-        onViewAdded()
         activity.onBackPressedDispatcher.addCallback(backPressedCallback)
         when (layoutType) {
             is LayoutType.CenterByPadding, is LayoutType.CenterBySize -> showCenterDialog()

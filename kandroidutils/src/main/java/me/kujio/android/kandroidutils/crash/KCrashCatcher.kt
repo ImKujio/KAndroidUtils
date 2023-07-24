@@ -7,6 +7,7 @@ import android.os.Parcelable
 import android.os.Process
 import kotlinx.parcelize.Parcelize
 import me.kujio.android.kandroidutils.*
+import java.text.SimpleDateFormat
 import java.util.*
 
 @SuppressLint("StaticFieldLeak")
@@ -59,6 +60,7 @@ data class CrashReport(
             val ele = e.stackTrace.firstOrNull { it.className.contains(KApp.packageName) } ?: run {
                 e.stackTrace[0]
             }
+            val time = SimpleDateFormat("yyyy-MM-dd HH:mm:ss",Locale.getDefault()).format(Date())
             return CrashReport(
                 expMsg = e.message ?: "未知",
                 packageName = KApp.packageName,
@@ -66,7 +68,7 @@ data class CrashReport(
                 funName = ele.methodName,
                 lineNum = ele.lineNumber.toString(),
                 expType = e::class.java.name,
-                expTime = Calendar.getInstance().format("yyyy-MM-dd HH:mm:ss"),
+                expTime = time,
                 deviceName = KDevice.name,
                 brandName = KDevice.brand,
                 androidVer = KDevice.androidVerName,
@@ -81,7 +83,7 @@ data class CrashReport(
     fun toTextReport(): String {
         return StringBuilder().apply {
             append("异常：").append(expMsg).append("\n")
-            append("报名：").append(packageName).append("\n")
+            append("包名：").append(packageName).append("\n")
             append("类名：").append(className).append("\n")
             append("方法：").append(funName).append("\n")
             append("行数：").append(lineNum).append("\n")

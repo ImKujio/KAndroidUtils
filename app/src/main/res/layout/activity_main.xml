@@ -43,6 +43,12 @@
                 android:layout_height="wrap_content"/>
 
         <Button
+                android:id="@+id/constraint_load"
+                android:text="约束布局加载"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <Button
                 android:id="@+id/refresh"
                 android:text="刷新列表"
                 android:layout_width="wrap_content"
