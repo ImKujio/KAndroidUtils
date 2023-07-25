@@ -3,6 +3,7 @@ package me.kujio.android.kandroidutils.simple
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
 import android.view.Gravity
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -35,14 +36,14 @@ class MainActivity : AppCompatActivity() {
         logd { Any().hashCode().toString() }
         binding.dialogCenter.setOnClickListener {
             lifecycleScope.launch {
-                val dialog = CenterDialog(this@MainActivity)
-                dialog.show()
+                val dialog = CenterDialog()
+                dialog.show(this@MainActivity)
             }
         }
         binding.dialogBottom.setOnClickListener {
             lifecycleScope.launch {
-                val dialog = BottomDialog(this@MainActivity)
-                dialog.show()
+                val dialog = BottomDialog()
+                dialog.show(this@MainActivity)
             }
         }
         binding.crashCatch.setOnClickListener {
@@ -53,11 +54,36 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this,ConstraintLoadActivity::class.java))
         }
 
+        binding.frameLoad.setOnClickListener {
+            startActivity(Intent(this,FrameLayoutLoadActivity::class.java))
+        }
+
+        binding.linearLoad.setOnClickListener {
+            startActivity(Intent(this,LinearLayoutLoadActivity::class.java))
+        }
+
         logd { KStore.cacheDir.absolutePath }
         logd { KStore.filesDir.absolutePath }
         binding.adapter = loadMoreRecyclerAdapter
         binding.refresh.setOnClickListener {
             binding.adapter?.notifyDataSetChanged()
+        }
+
+        binding.dialogLoading.setOnClickListener {
+            KLoad.showLoading()
+            Handler(mainLooper).postDelayed({
+                KLoad.dismissLoading()
+                KLoad.toastFailed("加载失败")
+
+                Handler(mainLooper).postDelayed({
+                    KLoad.showLoading()
+
+                    Handler(mainLooper).postDelayed({
+                        KLoad.dismissLoading()
+                        KLoad.toastSuccess("加载成功")
+                    },3000)
+                },2000)
+            },3000)
         }
     }
 

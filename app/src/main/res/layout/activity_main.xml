@@ -37,6 +37,12 @@
                 android:layout_height="wrap_content"/>
 
         <Button
+                android:id="@+id/dialog_loading"
+                android:text="加载弹窗"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <Button
                 android:id="@+id/crash_catch"
                 android:text="异常捕获"
                 android:layout_width="wrap_content"
@@ -45,6 +51,18 @@
         <Button
                 android:id="@+id/constraint_load"
                 android:text="约束布局加载"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <Button
+                android:id="@+id/frame_load"
+                android:text="帧布局加载"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <Button
+                android:id="@+id/linear_load"
+                android:text="线性布局加载"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 

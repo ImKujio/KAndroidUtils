@@ -28,7 +28,6 @@ fun EditText.showKeyboard() {
     imm.showSoftInput(this, 0)
 }
 
-
 @BindingAdapter("simpleAdapter")
 fun setSimpleAdapter(
     recyclerView: RecyclerView, simpleAdapter: SimpleRecyclerAdapter?
