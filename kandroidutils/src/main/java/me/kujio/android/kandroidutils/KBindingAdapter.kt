@@ -1,21 +1,19 @@
 package me.kujio.android.kandroidutils
 
 import android.app.Activity
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
-import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import me.kujio.android.kandroidutils.databinding.ItemLoadMoreBinding
 
@@ -28,61 +26,35 @@ fun EditText.showKeyboard() {
     imm.showSoftInput(this, 0)
 }
 
-@BindingAdapter("simpleAdapter")
-fun setSimpleAdapter(
-    recyclerView: RecyclerView, simpleAdapter: SimpleRecyclerAdapter?
+@BindingAdapter("android:kAdapter")
+fun setKAdapter(
+    recyclerView: RecyclerView, simpleAdapter: KRecyclerAdapter?
 ) {
     if (simpleAdapter == null) return
-    recyclerView.recycledViewPool.setMaxRecycledViews(0, 8)
     recyclerView.layoutManager = LinearLayoutManager(recyclerView.context).apply {
         orientation = LinearLayoutManager.VERTICAL
     }
     recyclerView.adapter = simpleAdapter
 }
 
-@BindingAdapter("simpleAdapter", "poolSize")
-fun setSimpleAdapter(
-    recyclerView: RecyclerView, simpleAdapter: SimpleRecyclerAdapter?, poolSize: Int = 8
-) {
-    if (simpleAdapter == null) return
-    recyclerView.recycledViewPool.setMaxRecycledViews(0, poolSize)
-    recyclerView.layoutManager = LinearLayoutManager(recyclerView.context).apply {
-        orientation = LinearLayoutManager.VERTICAL
-    }
-    recyclerView.adapter = simpleAdapter
-}
+class KViewHolder(val binding: ViewDataBinding) : RecyclerView.ViewHolder(binding.root)
 
-@BindingAdapter("simpleAdapter", "types", "poolSize")
-fun setSimpleAdapter(
-    recyclerView: RecyclerView, simpleAdapter: SimpleRecyclerAdapter?, types: Int = 1, poolSize: Int = 10
-) {
-    if (simpleAdapter == null) return
-    repeat(types) { i ->
-        recyclerView.recycledViewPool.setMaxRecycledViews(i, poolSize)
-    }
-    recyclerView.layoutManager = LinearLayoutManager(recyclerView.context).apply {
-        orientation = LinearLayoutManager.VERTICAL
-    }
-    recyclerView.adapter = simpleAdapter
-}
-
-class SimpleRecyclerAdapter(
-    private val resId: (pos: Int) -> Int,
+open class KRecyclerAdapter(
+    private val resId: (pos: Int) -> Pair<Int, Int>,
     private val count: () -> Int,
-    private val bindData: (adapter: SimpleRecyclerAdapter, binding: ViewDataBinding, pos: Int) -> Unit
-) : RecyclerView.Adapter<SimpleRecyclerAdapter.SimpleViewHolder>() {
-    lateinit var ctx: Context
-    private val resIds = ArrayList<Int>()
-
-    class SimpleViewHolder(val binding: ViewDataBinding) : RecyclerView.ViewHolder(binding.root)
+    private val onBinding: KRecyclerAdapter.(view: RecyclerView, binding: ViewDataBinding, pos: Int) -> Unit
+) : RecyclerView.Adapter<KViewHolder>() {
+    protected lateinit var recyclerView: RecyclerView
+    protected val resIds = ArrayList<Int>()
+    protected var curItemCount = 0
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         super.onAttachedToRecyclerView(recyclerView)
-        ctx = recyclerView.context
+        this.recyclerView = recyclerView
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SimpleViewHolder {
-        return SimpleViewHolder(
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): KViewHolder {
+        return KViewHolder(
             DataBindingUtil.inflate(
                 LayoutInflater.from(parent.context), resIds[viewType], parent, false
             )
@@ -90,62 +62,67 @@ class SimpleRecyclerAdapter(
     }
 
     override fun getItemViewType(position: Int): Int {
-        val id = resId(position)
-        if (resIds.indexOf(id) == -1) resIds.add(id)
-        return resIds.indexOf(id)
+        val pair = resId(position)
+        var type = resIds.indexOf(pair.first)
+        if (type == -1) {
+            resIds.add(pair.first)
+            recyclerView.recycledViewPool.setMaxRecycledViews(pair.first, pair.second)
+            type = resIds.size - 1
+        }
+        return type
     }
 
-    override fun onBindViewHolder(holder: SimpleViewHolder, position: Int) {
-        bindData(this, holder.binding, position)
+    override fun onBindViewHolder(holder: KViewHolder, position: Int) {
+        onBinding(recyclerView, holder.binding, position)
     }
 
     override fun getItemCount(): Int {
-        return count()
+        curItemCount = count()
+        return curItemCount
+    }
+
+    open fun notifyReset(){
+        val lastCount = curItemCount
+        val curCount = itemCount
+        if (lastCount == 0 && curCount == 0) return
+        if (lastCount > 0) notifyItemRangeRemoved(0,lastCount)
+        if (curCount > 0) notifyItemRangeInserted(0,curCount)
+        recyclerView.scrollTo(0,0)
+    }
+
+    open fun notifyAppend(){
+        val lastCount = curItemCount
+        val curCount = itemCount
+        if (lastCount == 0 && curCount == 0) return
+        if (lastCount == curCount) return
+        val scrollY = recyclerView.scrollY
+        if (curCount > lastCount) notifyItemRangeInserted(lastCount,curCount)
+        recyclerView.scrollTo(0,scrollY)
     }
 }
 
-@BindingAdapter("loadMoreAdapter")
-fun setLoadMoreAdapter(
-    recyclerView: RecyclerView, loadMoreAdapter: LoadMoreRecyclerAdapter?
-) {
-    if (loadMoreAdapter == null) return
-    if (recyclerView.context !is AppCompatActivity) return
-    recyclerView.layoutManager = LinearLayoutManager(recyclerView.context).apply {
-        orientation = LinearLayoutManager.VERTICAL
-    }
-    recyclerView.adapter = loadMoreAdapter
-}
-
-class LoadMoreRecyclerAdapter(
-    private val resId: (pos: Int) -> Int,
-    private val count: () -> Int,
-    private val load: suspend () -> Unit,
+class KMoreRecyclerAdapter(
+    resId: (pos: Int) -> Pair<Int, Int>,
+    count: () -> Int,
+    private val load: suspend (adapter : KMoreRecyclerAdapter) -> Unit,
     private val more: () -> Boolean,
-    private val bindData: (adapter: LoadMoreRecyclerAdapter, binding: ViewDataBinding, pos: Int) -> Unit
-) : RecyclerView.Adapter<LoadMoreRecyclerAdapter.LoadMoreViewHolder>() {
-    lateinit var ctx: Context
-
-    class LoadMoreViewHolder(val binding: ViewDataBinding) : RecyclerView.ViewHolder(binding.root)
-
-    private lateinit var loadMoreViewHolder: LoadMoreViewHolder
-
-    private var scope: CoroutineScope? = null
-
+    onBinding: KRecyclerAdapter.(view: RecyclerView, binding: ViewDataBinding, pos: Int) -> Unit
+):KRecyclerAdapter(resId,count,onBinding){
+    private val loadMoreRes = R.layout.item_load_more
     private var isLoading = false
+    private lateinit var scope: CoroutineScope
+    private lateinit var loadMoreViewHolder: KViewHolder
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         super.onAttachedToRecyclerView(recyclerView)
-        recyclerView.context.let {
-            ctx = it
-            if (it is LifecycleOwner) scope = it.lifecycleScope
-        }
+        scope = CoroutineScope(Dispatchers.Main)
+        recyclerView.recycledViewPool.setMaxRecycledViews(-1, 1)
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
                 val visibleItemCount = recyclerView.layoutManager?.childCount ?: 0
                 val totalItemCount = recyclerView.layoutManager?.itemCount ?: 0
-                val firstVisibleItemPosition =
-                    (recyclerView.layoutManager as? LinearLayoutManager)?.findFirstVisibleItemPosition() ?: 0
+                val firstVisibleItemPosition = (recyclerView.layoutManager as? LinearLayoutManager)?.findFirstVisibleItemPosition() ?: 0
                 if (visibleItemCount + firstVisibleItemPosition >= totalItemCount && firstVisibleItemPosition >= 0) {
                     loadMoreViewHolder.binding.let { binding ->
                         binding as ItemLoadMoreBinding
@@ -157,47 +134,47 @@ class LoadMoreRecyclerAdapter(
         })
     }
 
+    override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
+        scope.cancel()
+        super.onDetachedFromRecyclerView(recyclerView)
+    }
+
     private fun loadMore() {
         if (isLoading) return
         isLoading = true
         loadMoreViewHolder.binding.let { binding ->
             binding as ItemLoadMoreBinding
             binding.state = 1
-            scope?.launch {
+            scope.launch {
                 try {
-                    load()
+                    load(this@KMoreRecyclerAdapter)
                     isLoading = false
                 } catch (_: Throwable) {
                     binding.state = 3
                 }
-            } ?: run {
-                isLoading = false
-                binding.state = 3
             }
         }
-
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LoadMoreViewHolder {
-        return LoadMoreViewHolder(
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): KViewHolder {
+        return KViewHolder(
             DataBindingUtil.inflate(
-                LayoutInflater.from(parent.context), viewType, parent, false
+                LayoutInflater.from(parent.context),
+                if (viewType == -1) loadMoreRes else resIds[viewType],
+                parent,
+                false
             )
         ).also {
-            if (viewType == R.layout.item_load_more)
-                loadMoreViewHolder = it
+            if (viewType == -1) loadMoreViewHolder = it
         }
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (position == itemCount - 1) {
-            R.layout.item_load_more
-        } else {
-            resId(position)
-        }
+        if (position == itemCount - 1) return -1
+        return super.getItemViewType(position)
     }
 
-    override fun onBindViewHolder(holder: LoadMoreViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: KViewHolder, position: Int) {
         if (holder.binding is ItemLoadMoreBinding) {
             if (more()) loadMore()
             else holder.binding.state = 2
@@ -205,11 +182,30 @@ class LoadMoreRecyclerAdapter(
                 loadMore()
             }
         } else {
-            bindData(this, holder.binding, position)
+            super.onBindViewHolder(holder, position)
         }
     }
 
     override fun getItemCount(): Int {
-        return count() + 1
+        return super.getItemCount() + 1
+    }
+
+    override fun notifyReset() {
+        val lastCount = curItemCount
+        val curCount = itemCount - 1
+        if (lastCount == 0 && curCount == 0) return
+        if (lastCount > 0) notifyItemRangeRemoved(0,lastCount)
+        if (curCount > 0) notifyItemRangeRemoved(0,curCount)
+        recyclerView.scrollTo(0,0)
+    }
+
+    override fun notifyAppend(){
+        val lastCount = curItemCount
+        val curCount = itemCount - 1
+        if (lastCount == 0 && curCount == 0) return
+        if (lastCount == curCount) return
+        val scrollY = recyclerView.scrollY
+        if (curCount > lastCount) notifyItemRangeInserted(lastCount, curCount - lastCount)
+        recyclerView.scrollTo(0,scrollY)
     }
 }

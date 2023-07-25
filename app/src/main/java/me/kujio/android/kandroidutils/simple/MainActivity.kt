@@ -51,22 +51,24 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.constraintLoad.setOnClickListener {
-            startActivity(Intent(this,ConstraintLoadActivity::class.java))
+            startActivity(Intent(this, ConstraintLoadActivity::class.java))
         }
 
         binding.frameLoad.setOnClickListener {
-            startActivity(Intent(this,FrameLayoutLoadActivity::class.java))
+            startActivity(Intent(this, FrameLayoutLoadActivity::class.java))
         }
 
         binding.linearLoad.setOnClickListener {
-            startActivity(Intent(this,LinearLayoutLoadActivity::class.java))
+            startActivity(Intent(this, LinearLayoutLoadActivity::class.java))
         }
 
         logd { KStore.cacheDir.absolutePath }
         logd { KStore.filesDir.absolutePath }
-        binding.adapter = loadMoreRecyclerAdapter
+        binding.adapter = kMoreAdapter
         binding.refresh.setOnClickListener {
-            binding.adapter?.notifyDataSetChanged()
+            list.clear()
+            page = 0
+            kMoreAdapter.notifyReset()
         }
 
         binding.dialogLoading.setOnClickListener {
@@ -81,9 +83,9 @@ class MainActivity : AppCompatActivity() {
                     Handler(mainLooper).postDelayed({
                         KLoad.dismissLoading()
                         KLoad.toastSuccess("加载成功")
-                    },3000)
-                },2000)
-            },3000)
+                    }, 3000)
+                }, 2000)
+            }, 3000)
         }
     }
 
@@ -95,24 +97,28 @@ class MainActivity : AppCompatActivity() {
         repeat(10) {
             list.add(Math.random().toString())
         }
-        loadMoreRecyclerAdapter.notifyDataSetChanged()
+        kMoreAdapter.notifyAppend()
     }
 
-    val loadMoreRecyclerAdapter = LoadMoreRecyclerAdapter(
-        resId = { R.layout.item_main },
+    private val kMoreAdapter = KMoreRecyclerAdapter(
+        resId = { R.layout.item_main to 12 },
         count = { list.size },
-        load = suspend { page++;load() },
+        load = {
+            page++
+            load()
+        },
         more = { list.size < 35 }
     ) { _, binding, pos ->
-        if (binding !is ItemMainBinding) return@LoadMoreRecyclerAdapter
+        if (binding !is ItemMainBinding) return@KMoreRecyclerAdapter
         binding.text = list[pos]
     }
 
-    val simpleRecyclerAdapter = SimpleRecyclerAdapter(
-        resId = { R.layout.item_main },
+
+    val kAdapter = KRecyclerAdapter(
+        resId = { R.layout.item_main to 12 },
         count = { 50 }
     ) { _, binding, pos ->
-        if (binding !is ItemMainBinding) return@SimpleRecyclerAdapter
+        if (binding !is ItemMainBinding) return@KRecyclerAdapter
         binding.text = Math.random().toString()
     }
 
