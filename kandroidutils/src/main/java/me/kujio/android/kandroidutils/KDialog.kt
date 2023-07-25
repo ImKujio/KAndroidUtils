@@ -1,7 +1,6 @@
 package me.kujio.android.kandroidutils
 
 import android.app.Activity
-import android.graphics.Color
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -19,7 +18,7 @@ abstract class KDialog(
     private val layoutType: LayoutType,
 ) : DialogFragment() {
 
-    protected lateinit var binding: ViewDataBinding
+    private lateinit var _binding: ViewDataBinding
 
     private fun applyLayoutParams(window: Window) {
         val layoutParams = window.attributes
@@ -59,8 +58,8 @@ abstract class KDialog(
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = DataBindingUtil.inflate(inflater, layoutResId, container, false)
-        return binding.root
+        _binding = DataBindingUtil.inflate(inflater, layoutResId, container, false)
+        return _binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -69,11 +68,10 @@ abstract class KDialog(
         window.setDimAmount(0.2f)
         applyLayoutParams(window)
         window.setBackgroundDrawableResource(android.R.color.transparent)
-        onViewBinding(binding)
+        onViewBinding(_binding)
     }
 
     abstract fun onViewBinding(binding: ViewDataBinding)
-
 
     open fun show(activity: Activity,tag:String = activity.hashCode().toString()){
         if (activity is AppCompatActivity){

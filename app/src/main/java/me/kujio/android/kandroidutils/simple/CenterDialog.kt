@@ -8,7 +8,7 @@ import me.kujio.android.kandroidutils.simple.databinding.DialogTestBinding
 
 class CenterDialog : KDialog(
     R.layout.dialog_test,
-    KDialog.LayoutType.CenterByPadding(DisPlay.height / 4, DisPlay.height / 4, 24.dp, 24.dp)
+    LayoutType.CenterByPadding(DisPlay.height / 4, DisPlay.height / 4, 24.dp, 24.dp)
 ) {
     override fun onViewBinding(binding: ViewDataBinding) {
         if (binding !is DialogTestBinding) return

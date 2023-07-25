@@ -7,7 +7,7 @@ import me.kujio.android.kandroidutils.simple.databinding.DialogTestBinding
 
 class BottomDialog: KDialog(
     R.layout.dialog_test,
-    KDialog.LayoutType.BottomBySize(DisPlay.width, DisPlay.height / 2)) {
+    LayoutType.BottomBySize(DisPlay.width, DisPlay.height / 2)) {
     override fun onViewBinding(binding: ViewDataBinding) {
         if (binding !is DialogTestBinding) return
         binding.title.text = "中心弹窗"
