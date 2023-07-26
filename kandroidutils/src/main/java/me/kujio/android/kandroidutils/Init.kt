@@ -29,7 +29,7 @@ object Init {
         KDevice.init(ctx)
         KApp.init(ctx)
         CrashCatcher.init(ctx)
-        DisPlay.init(ctx)
+        KDisPlay.init(ctx)
         KStore.init(ctx)
     }
 }

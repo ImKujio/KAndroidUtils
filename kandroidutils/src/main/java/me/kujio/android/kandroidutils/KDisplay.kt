@@ -3,20 +3,22 @@ package me.kujio.android.kandroidutils
 import android.R
 import android.content.Context
 import android.content.res.Resources
+import android.graphics.Point
 import android.os.Build
 import android.util.TypedValue
+import android.view.WindowManager
 
 
-val Int.dp: Int; get() = (DisPlay.dpUnit * this).toInt()
+val Int.dp: Int; get() = (KDisPlay.dpUnit * this).toInt()
 
-val Int.sp: Int; get() = (DisPlay.spUnit * this).toInt()
+val Int.sp: Int; get() = (KDisPlay.spUnit * this).toInt()
 
-val Float.dp: Float; get() = DisPlay.dpUnit * this
+val Float.dp: Float; get() = KDisPlay.dpUnit * this
 
-val Float.sp: Float; get() = DisPlay.spUnit * this
+val Float.sp: Float; get() = KDisPlay.spUnit * this
 
 
-object DisPlay {
+object KDisPlay {
     var width = 0; private set
     var height = 0; private set
     var statusBar = 0; private set
@@ -25,8 +27,15 @@ object DisPlay {
     var animationDuration = 0L; private set
     fun init(ctx: Context) {
         val dm = ctx.resources.displayMetrics
-        width = dm.widthPixels
-        height = dm.heightPixels
+        val size = Point(dm.widthPixels,dm.heightPixels)
+        ctx.getSystemService(Context.WINDOW_SERVICE)?.let {
+            if (it is WindowManager){
+                it.defaultDisplay?.getRealSize(size)
+            }
+        }
+        width = size.x
+        height = size.y
+        loge { "width:$width height:$height" }
         dpUnit = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1f, dm)
         spUnit = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 1f, dm)
         animationDuration = ctx.resources.getInteger(R.integer.config_mediumAnimTime).toLong()

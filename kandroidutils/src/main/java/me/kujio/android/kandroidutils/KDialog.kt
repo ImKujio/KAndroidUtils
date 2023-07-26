@@ -41,21 +41,24 @@ abstract class KDialog(
 
             is LayoutType.CenterByPadding -> {
                 window.setGravity(Gravity.CENTER)
-                layoutParams.width = DisPlay.width - layoutType.paddingLeft - layoutType.paddingRight
-                layoutParams.height = DisPlay.height - layoutType.paddingTop - layoutType.paddingBottom
+                layoutParams.width = KDisPlay.width - layoutType.paddingLeft - layoutType.paddingRight
+                layoutParams.height = KDisPlay.height - layoutType.paddingTop - layoutType.paddingBottom
                 window.setWindowAnimations(R.style.KDialogStyle_Center)
             }
 
             is LayoutType.BottomByPadding -> {
                 window.setGravity(Gravity.BOTTOM)
-                layoutParams.width = DisPlay.width - layoutType.paddingLeft - layoutType.paddingRight
-                layoutParams.height = DisPlay.height - layoutType.paddingTop - layoutType.paddingBottom
+                layoutParams.width = KDisPlay.width - layoutType.paddingLeft - layoutType.paddingRight
+                layoutParams.height = KDisPlay.height - layoutType.paddingTop - layoutType.paddingBottom
                 window.setWindowAnimations(R.style.KDialogStyle_Bottom)
             }
         }
         window.attributes = layoutParams
     }
 
+    override fun getTheme(): Int {
+        return R.style.KDialogStyle
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _binding = DataBindingUtil.inflate(inflater, layoutResId, container, false)
@@ -63,17 +66,18 @@ abstract class KDialog(
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
         val window = dialog?.window ?: return
         window.setDimAmount(0.2f)
         applyLayoutParams(window)
         window.setBackgroundDrawableResource(android.R.color.transparent)
+        super.onViewCreated(view, savedInstanceState)
         onViewBinding(_binding)
     }
 
     abstract fun onViewBinding(binding: ViewDataBinding)
 
     open fun show(activity: Activity,tag:String = activity.hashCode().toString()){
+        setStyle(STYLE_NO_FRAME, R.style.KDialogStyle)
         if (activity is AppCompatActivity){
             show(activity.supportFragmentManager,tag)
         }

@@ -121,10 +121,10 @@ class KTitleBar(
         ) {
             val rootView = frameLayout.parent
             if (rootView !is FrameLayout) return
-            val sumHeight = height + if (fitStatusBar) DisPlay.statusBar else 0
+            val sumHeight = height + if (fitStatusBar) KDisPlay.statusBar else 0
             frameLayout.layoutParams = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, sumHeight)
             frameLayout.setPadding(
-                8.dp, if (fitStatusBar) DisPlay.statusBar else 0, 8.dp, 0
+                8.dp, if (fitStatusBar) KDisPlay.statusBar else 0, 8.dp, 0
             )
             frameLayout.background = background
             frameLayout.elevation = elevation.toFloat()

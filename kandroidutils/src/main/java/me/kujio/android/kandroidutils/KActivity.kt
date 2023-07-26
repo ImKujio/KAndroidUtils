@@ -35,10 +35,10 @@ fun Activity.applyTitleBar(
 ) {
     val rootView = window.decorView.findViewById(android.R.id.content) as FrameLayout
     val titleBarView = FrameLayout(this)
-    val sumHeight = height + if (fitStatusBar) DisPlay.statusBar else 0
+    val sumHeight = height + if (fitStatusBar) KDisPlay.statusBar else 0
     titleBarView.layoutParams = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, sumHeight)
     titleBarView.setPadding(
-        8.dp, if (fitStatusBar) DisPlay.statusBar else 0, 8.dp, 0
+        8.dp, if (fitStatusBar) KDisPlay.statusBar else 0, 8.dp, 0
     )
     titleBarView.background = background
     titleBarView.elevation = elevation.toFloat()
