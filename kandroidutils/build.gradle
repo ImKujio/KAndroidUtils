@@ -44,7 +44,7 @@ publishing {
         release(MavenPublication) {
             groupId = 'me.kujio'
             artifactId = 'kandroidutils'
-            version = '1.5.4'
+            version = '1.5.5'
 
             afterEvaluate {
                 from components.release

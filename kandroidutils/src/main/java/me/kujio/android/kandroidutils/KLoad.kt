@@ -53,14 +53,14 @@ sealed class KLoad(val text: String, val view: View? = null) {
             if (activity == null || activity !is AppCompatActivity) return
             val dialog = KLoadingDialog(text, defFailedView(activity, 32.dp, Color.WHITE))
             dialog.show(activity.supportFragmentManager, "kToastFailedDialog")
-            Handler(activity.mainLooper).postDelayed({ dialog.dismiss() }, 2000)
+            Handler(activity.mainLooper).postDelayed({ runCatching { dialog.dismiss() } }, 2000)
         }
 
         fun toastSuccess(text: String, activity: Context? = KApp.curActivity) {
             if (activity == null || activity !is AppCompatActivity) return
             val dialog = KLoadingDialog(text, defSuccessView(activity, 32.dp, Color.WHITE))
             dialog.show(activity.supportFragmentManager, "kToastSuccessDialog")
-            Handler(activity.mainLooper).postDelayed({ dialog.dismiss() }, 2000)
+            Handler(activity.mainLooper).postDelayed({ runCatching { dialog.dismiss() } }, 2000)
         }
     }
 }
@@ -241,7 +241,7 @@ private fun FrameLayout.addLoadingView(view: View) {
 }
 
 @BindingAdapter("android:loading")
-fun setFrameLayoutLoading(layout: FrameLayout, kLoad: KLoad?) = setFrameLayoutLoading(layout,kLoad,null)
+fun setFrameLayoutLoading(layout: FrameLayout, kLoad: KLoad?) = setFrameLayoutLoading(layout, kLoad, null)
 
 @BindingAdapter("android:loading", "android:onReload")
 fun setFrameLayoutLoading(layout: FrameLayout, kLoad: KLoad?, reload: OnClickListener?) {
@@ -262,7 +262,7 @@ private fun LinearLayout.addLoadingView(view: View) {
 }
 
 @BindingAdapter("android:loading")
-fun setLinearLayoutLoading(layout: LinearLayout, kLoad: KLoad?) = setLinearLayoutLoading(layout,kLoad,null)
+fun setLinearLayoutLoading(layout: LinearLayout, kLoad: KLoad?) = setLinearLayoutLoading(layout, kLoad, null)
 
 @BindingAdapter("android:loading", "android:onReload")
 fun setLinearLayoutLoading(layout: LinearLayout, kLoad: KLoad?, reload: OnClickListener?) {
