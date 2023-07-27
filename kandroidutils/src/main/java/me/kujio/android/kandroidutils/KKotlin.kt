@@ -12,3 +12,5 @@ fun Throwable.report(): String {
         }
     }
 }
+
+class CancelExcpetion(msg:String? = null) : RuntimeException(msg)

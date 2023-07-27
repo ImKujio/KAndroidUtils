@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+    </data>
+
+    <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bk_r16_a60"
+            android:minWidth="120dp"
+            android:minHeight="120dp"
+            android:gravity="center"
+            android:padding="24dp">
+
+        <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_success"
+                app:tint="@android:color/white"/>
+
+        <TextView
+                android:id="@+id/message"
+                android:text="操作成功"
+                android:textColor="@android:color/white"
+                android:layout_marginTop="16dp"
+                android:gravity="center"
+                android:maxWidth="160dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+    </LinearLayout>
+</layout>

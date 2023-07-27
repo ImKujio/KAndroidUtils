@@ -7,6 +7,7 @@ import android.os.Handler
 import android.view.Gravity
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.kujio.android.kandroidutils.*
@@ -62,6 +63,16 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, LinearLayoutLoadActivity::class.java))
         }
 
+        binding.dialogConfirm.setOnClickListener {
+            lifecycleScope.launch(CoroutineExceptionHandler { _, throwable ->
+                if (throwable is CancelExcpetion) return@CoroutineExceptionHandler
+                throwable.printStackTrace()
+            }) {
+                KDialog.confirm("确认弹窗", "是否确认？")
+                KDialog.success("确认完成")
+            }
+        }
+
         logd { KStore.cacheDir.absolutePath }
         logd { KStore.filesDir.absolutePath }
         binding.adapter = kMoreAdapter
@@ -72,17 +83,17 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.dialogLoading.setOnClickListener {
-            KLoad.showLoading()
+            KDialog.loading()
             Handler(mainLooper).postDelayed({
-                KLoad.dismissLoading()
-                KLoad.toastFailed("加载失败")
+                KDialog.dismissLoading()
+                KDialog.failed("加载失败")
 
                 Handler(mainLooper).postDelayed({
-                    KLoad.showLoading()
+                    KDialog.loading()
 
                     Handler(mainLooper).postDelayed({
-                        KLoad.dismissLoading()
-                        KLoad.toastSuccess("加载成功")
+                        KDialog.dismissLoading()
+                        KDialog.success("加载成功")
                     }, 3000)
                 }, 2000)
             }, 3000)

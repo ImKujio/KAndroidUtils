@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
-import android.os.Handler
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -14,7 +13,6 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.view.children
@@ -31,40 +29,6 @@ private val FAILED_ID by lazy { View.generateViewId() }
 sealed class KLoad(val text: String, val view: View? = null) {
     class Loading(text: String = "加载中···", view: View? = null) : KLoad(text, view)
     class Failed(text: String, view: View? = null) : KLoad(text, view)
-
-    companion object {
-
-        fun showLoading(activity: Context? = KApp.curActivity) {
-            if (activity == null || activity !is AppCompatActivity) return
-            val dialog = KLoadingDialog("加载中···", defKLoadingView(activity, 32.dp, Color.WHITE))
-            dialog.show(activity.supportFragmentManager, "kLoadingDialog")
-        }
-
-        fun dismissLoading(activity: Context? = KApp.curActivity) {
-            if (activity == null || activity !is AppCompatActivity) return
-            activity.supportFragmentManager.findFragmentByTag("kLoadingDialog")?.let {
-                if (it is DialogFragment) {
-                    it.dismiss()
-                }
-            }
-        }
-
-        fun toastFailed(text: String, activity: Context? = KApp.curActivity) {
-            dismissLoading()
-            if (activity == null || activity !is AppCompatActivity) return
-            val dialog = KLoadingDialog(text, defFailedView(activity, 32.dp, Color.WHITE))
-            dialog.show(activity.supportFragmentManager, "kToastFailedDialog")
-            Handler(activity.mainLooper).postDelayed({ runCatching { dialog.dismiss() } }, 2000)
-        }
-
-        fun toastSuccess(text: String, activity: Context? = KApp.curActivity) {
-            dismissLoading()
-            if (activity == null || activity !is AppCompatActivity) return
-            val dialog = KLoadingDialog(text, defSuccessView(activity, 32.dp, Color.WHITE))
-            dialog.show(activity.supportFragmentManager, "kToastSuccessDialog")
-            Handler(activity.mainLooper).postDelayed({ runCatching { dialog.dismiss() } }, 2000)
-        }
-    }
 }
 
 private fun defKLoadingView(context: Context, size: Int = 32.dp, color: Int? = null): View {
@@ -112,7 +76,7 @@ private fun createLoadView(context: Context, text: String, textColor: Int? = nul
 }
 
 
-class KLoadingDialog(private val text: String, private val view: View) : DialogFragment() {
+class KLoadingDialogs(private val text: String, private val view: View) : DialogFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         return createLoadView(
             requireContext(),
@@ -120,7 +84,7 @@ class KLoadingDialog(private val text: String, private val view: View) : DialogF
             Color.WHITE,
             view
         ).apply {
-            setBackgroundResource(R.drawable.bk_r16)
+            setBackgroundResource(R.drawable.bk_r16_a60)
             setPadding(24.dp)
         }
     }
