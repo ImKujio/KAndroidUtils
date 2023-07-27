@@ -50,6 +50,7 @@ sealed class KLoad(val text: String, val view: View? = null) {
         }
 
         fun toastFailed(text: String, activity: Context? = KApp.curActivity) {
+            dismissLoading()
             if (activity == null || activity !is AppCompatActivity) return
             val dialog = KLoadingDialog(text, defFailedView(activity, 32.dp, Color.WHITE))
             dialog.show(activity.supportFragmentManager, "kToastFailedDialog")
@@ -57,6 +58,7 @@ sealed class KLoad(val text: String, val view: View? = null) {
         }
 
         fun toastSuccess(text: String, activity: Context? = KApp.curActivity) {
+            dismissLoading()
             if (activity == null || activity !is AppCompatActivity) return
             val dialog = KLoadingDialog(text, defSuccessView(activity, 32.dp, Color.WHITE))
             dialog.show(activity.supportFragmentManager, "kToastSuccessDialog")
