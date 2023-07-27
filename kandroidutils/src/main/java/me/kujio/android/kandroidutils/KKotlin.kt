@@ -13,4 +13,5 @@ fun Throwable.report(): String {
     }
 }
 
-class CancelExcpetion(msg:String? = null) : RuntimeException(msg)
+class IgnoreException : RuntimeException("此异常为忽略异常，用来取消操作，务必捕获该异常")
+

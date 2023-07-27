@@ -3,17 +3,15 @@ package me.kujio.android.kandroidutils
 import android.app.Activity
 import android.os.Bundle
 import android.os.Handler
-import android.view.Gravity
-import android.view.LayoutInflater
-import android.view.View
+import android.view.*
 import android.view.View.OnClickListener
-import android.view.ViewGroup
-import android.view.Window
 import androidx.annotation.LayoutRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.Lifecycle
+import me.kujio.android.kandroidutils.KApp.onStopped
 import me.kujio.android.kandroidutils.databinding.DialogConfirmBinding
 import me.kujio.android.kandroidutils.databinding.DialogFailedBinding
 import me.kujio.android.kandroidutils.databinding.DialogLoadingBinding
@@ -26,7 +24,9 @@ import kotlin.coroutines.suspendCoroutine
 fun KDialog.Companion.loading(message: String? = null) {
     KApp.curActivity?.let {
         val dialog = KLoadingDialog.newInstance(message)
+        dialog.isCancelable = false
         dialog.show(it, "KLoadingDialog")
+        it.onStopped("KLoadingDialog") { dismissLoading() }
     }
 }
 
@@ -42,20 +42,24 @@ fun KDialog.Companion.dismissLoading() {
 }
 
 fun KDialog.Companion.success(message: String? = null) {
-    KApp.curActivity?.let {
+    KApp.curActivity?.let { activity ->
         dismissLoading()
         val dialog = KSuccessDialog.newInstance(message)
-        dialog.show(it, "KSuccessDialog")
-        Handler(it.mainLooper).postDelayed({ dialog.dismiss() }, 2000)
+        dialog.isCancelable = false
+        dialog.show(activity, "KSuccessDialog")
+        Handler(activity.mainLooper).postDelayed({ dialog.dismiss() }, 2000)
+        activity.onStopped("KSuccessDialog") { dialog.dismiss() }
     }
 }
 
 fun KDialog.Companion.failed(message: String? = null) {
-    KApp.curActivity?.let {
+    KApp.curActivity?.let { activity ->
         dismissLoading()
         val dialog = KFailedDialog.newInstance(message)
-        dialog.show(it, "KFailedDialog")
-        Handler(it.mainLooper).postDelayed({ dialog.dismiss() }, 2000)
+        dialog.isCancelable = false
+        dialog.show(activity, "KFailedDialog")
+        Handler(activity.mainLooper).postDelayed({ dialog.dismiss() }, 2000)
+        activity.onStopped("KFailedDialog") { dialog.dismiss() }
     }
 }
 
@@ -66,16 +70,21 @@ suspend fun KDialog.Companion.confirm(title: String, content: String) =
             dialog.title = title
             dialog.content = content
             dialog.onCancel = OnClickListener {
-                continuation.resumeWithException(CancelExcpetion())
+                continuation.resumeWithException(IgnoreException())
                 dialog.dismiss()
             }
             dialog.onConfirm = OnClickListener {
                 continuation.resume(Unit)
                 dialog.dismiss()
             }
+            dialog.isCancelable = false
             dialog.show(activity, "KDialogConfirm")
+            activity.onStopped("KDialogConfirm") {
+                continuation.resumeWithException(IgnoreException())
+                dialog.dismiss()
+            }
         } ?: run {
-            continuation.resumeWithException(CancelExcpetion())
+            continuation.resumeWithException(IgnoreException())
         }
     }
 
@@ -212,6 +221,14 @@ abstract class KDialog(
                 window.setWindowAnimations(R.style.KDialogStyle_Bottom)
             }
 
+            is LayoutType.TopBySize -> {
+                window.setGravity(Gravity.TOP)
+                layoutParams.width = layoutType.width
+                layoutParams.height = layoutType.height
+                layoutParams.gravity = Gravity.TOP
+                window.setWindowAnimations(R.style.KDialogStyle_Top)
+            }
+
             is LayoutType.CenterByPadding -> {
                 window.setGravity(Gravity.CENTER)
                 layoutParams.width = KDisPlay.width - layoutType.paddingLeft - layoutType.paddingRight
@@ -225,12 +242,22 @@ abstract class KDialog(
                 layoutParams.height = KDisPlay.height - layoutType.paddingTop - layoutType.paddingBottom
                 window.setWindowAnimations(R.style.KDialogStyle_Bottom)
             }
+
+            is LayoutType.TopByPadding -> {
+                window.setGravity(Gravity.TOP)
+                layoutParams.width = KDisPlay.width - layoutType.paddingLeft - layoutType.paddingRight
+                layoutParams.height = KDisPlay.height - layoutType.paddingTop - layoutType.paddingBottom
+                window.setWindowAnimations(R.style.KDialogStyle_Top)
+            }
         }
         window.attributes = layoutParams
     }
 
+    open fun isFullScreen() = false
+
     override fun getTheme(): Int {
-        return R.style.KDialogStyle
+        return if (isFullScreen()) R.style.KDialogStyle
+        else super.getTheme()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -238,7 +265,8 @@ abstract class KDialog(
             inflater,
             layoutResId,
             container,
-            false)
+            false
+        )
         return _binding.root
     }
 
@@ -254,10 +282,11 @@ abstract class KDialog(
     abstract fun onViewBinding(binding: ViewDataBinding)
 
     open fun show(activity: Activity, tag: String = activity.hashCode().toString()) {
-        if (activity is AppCompatActivity) {
+        if (activity is AppCompatActivity && activity.lifecycle.currentState == Lifecycle.State.RESUMED) {
             show(activity.supportFragmentManager, tag)
         }
     }
+
 
     override fun dismiss() {
         runCatching { super.dismiss() }
@@ -278,6 +307,15 @@ abstract class KDialog(
         ) : LayoutType
 
         data class BottomBySize(
+            val width: Int = 0,
+            val height: Int = 0,
+        ) : LayoutType
+
+        data class TopByPadding(
+            val paddingTop: Int = 0, val paddingBottom: Int = 0, val paddingLeft: Int = 0, val paddingRight: Int = 0
+        ) : LayoutType
+
+        data class TopBySize(
             val width: Int = 0,
             val height: Int = 0,
         ) : LayoutType

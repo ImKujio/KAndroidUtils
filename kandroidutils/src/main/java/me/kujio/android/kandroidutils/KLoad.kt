@@ -84,7 +84,7 @@ class KLoadingDialogs(private val text: String, private val view: View) : Dialog
             Color.WHITE,
             view
         ).apply {
-            setBackgroundResource(R.drawable.bk_r16_a60)
+            setBackgroundResource(R.drawable.bk_r12_a60)
             setPadding(24.dp)
         }
     }

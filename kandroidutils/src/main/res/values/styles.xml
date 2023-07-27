@@ -18,4 +18,70 @@
         <item name="android:windowEnterAnimation">@anim/scale_in_center</item>
         <item name="android:windowExitAnimation">@anim/scale_out_center</item>
     </style>
+    <style name="KDialogStyle.Top" parent="@android:style/Animation.Dialog">
+        <item name="android:windowEnterAnimation">@anim/slide_in_top</item>
+        <item name="android:windowExitAnimation">@anim/slide_out_top</item>
+    </style>
+
+    <style name="KButton" parent="Widget.AppCompat.Button">
+        <item name="android:minWidth">@null</item>
+        <item name="android:minHeight">@null</item>
+        <item name="android:layout_margin">@null</item>
+        <item name="android:paddingTop">@null</item>
+        <item name="android:paddingBottom">@null</item>
+        <item name="android:paddingStart">@null</item>
+        <item name="android:paddingEnd">@null</item>
+        <item name="android:paddingLeft">@null</item>
+        <item name="android:paddingRight">@null</item>
+        <item name="android:textColor">@color/grey_800</item>
+        <item name="android:stateListAnimator">@null</item>
+        <item name="backgroundTint">@null</item>
+        <item name="android:insetTop">@null</item>
+        <item name="android:insetBottom">@null</item>
+        <item name="android:insetLeft">@null</item>
+        <item name="android:insetRight">@null</item>
+    </style>
+
+    <style name="KButton.Round.Text" parent="KButton">
+        <item name="android:minWidth">40dp</item>
+        <item name="android:minHeight">40dp</item>
+        <item name="android:maxLength">1</item>
+        <item name="android:background">@drawable/bk_round_click</item>
+    </style>
+
+    <style name="KButton.Round.Icon" parent="KButton">
+        <item name="android:maxLength">0</item>
+        <item name="android:background">@drawable/bk_round_click</item>
+        <item name="android:gravity">center</item>
+        <item name="android:padding">8dp</item>
+        <item name="iconPadding">0dp</item>
+        <item name="iconSize">24dp</item>
+        <item name="iconTint">@color/grey_800</item>
+    </style>
+
+    <style name="KButton.Text" parent="KButton">
+        <item name="android:background">@drawable/bk_rect4_click_black</item>
+        <item name="android:paddingTop">8dp</item>
+        <item name="android:paddingBottom">8dp</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+    </style>
+
+    <style name="KButton.Text.White" parent="KButton.Text">
+        <item name="android:background">@drawable/bk_rect4_click_white</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="KButton.Text.Big" parent="KButton">
+        <item name="android:minHeight">48dp</item>
+        <item name="android:background">@drawable/bk_rect4_click_black</item>
+        <item name="android:textSize">@dimen/text_size_huge</item>
+    </style>
+
+    <style name="KButton.Text.Big.White" parent="KButton.Text.Big">
+        <item name="android:background">@drawable/bk_rect4_click_white</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+
 </resources>

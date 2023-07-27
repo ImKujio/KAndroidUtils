@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
-import android.view.Gravity
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -28,10 +27,11 @@ class MainActivity : AppCompatActivity() {
         logw { "测试logw" }
         loge { "测试loge" }
         applyTitleBar {
-            title("标题", Gravity.START)
+            title("标题")
             txtBtn("按钮") {
 
             }
+            backBtn()
         }
         logd { Any().hashCode().toString() }
         logd { Any().hashCode().toString() }
@@ -65,7 +65,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.dialogConfirm.setOnClickListener {
             lifecycleScope.launch(CoroutineExceptionHandler { _, throwable ->
-                if (throwable is CancelExcpetion) return@CoroutineExceptionHandler
+                if (throwable is IgnoreException) return@CoroutineExceptionHandler
                 throwable.printStackTrace()
             }) {
                 KDialog.confirm("确认弹窗", "是否确认？")

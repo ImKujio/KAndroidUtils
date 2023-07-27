@@ -8,7 +8,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/bk_r16"
+            android:background="@drawable/bk_r12"
             android:backgroundTint="@android:color/white"
             android:paddingBottom="8dp">
 
@@ -35,28 +35,26 @@
 
         <Button
                 android:id="@+id/cancel"
-                android:layout_width="80dp"
-                android:layout_height="48dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginEnd="16dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin_avg"
+                android:layout_marginEnd="@dimen/margin_avg"
                 android:text="取消"
-                android:textColor="#636363"
-                style="?attr/borderlessButtonStyle"
                 app:layout_constraintTop_toBottomOf="@id/content"
-                app:layout_constraintEnd_toStartOf="@id/confirm"/>
+                app:layout_constraintEnd_toStartOf="@id/confirm"
+                style="@style/KButton.Text"/>
 
         <Button
                 android:id="@+id/confirm"
-                android:layout_width="80dp"
-                android:layout_height="48dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginEnd="16dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin_avg"
+                android:layout_marginEnd="@dimen/margin_avg"
                 android:text="确认"
-                android:textStyle="bold"
                 android:textColor="?attr/colorPrimary"
-                style="?attr/borderlessButtonStyle"
                 app:layout_constraintTop_toBottomOf="@id/content"
-                app:layout_constraintEnd_toEndOf="parent"/>
+                app:layout_constraintEnd_toEndOf="parent"
+                style="@style/KButton.Text"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
