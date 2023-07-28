@@ -3,7 +3,6 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'org.jetbrains.kotlin.kapt'
     id 'kotlin-parcelize'
-    id 'com.kezong.fat-aar'
     id 'maven-publish'
 }
 
@@ -44,7 +43,7 @@ publishing {
         release(MavenPublication) {
             groupId = 'me.kujio'
             artifactId = 'kandroidutils'
-            version = '1.6.0'
+            version = '1.6.1'
 
             afterEvaluate {
                 from components.release
