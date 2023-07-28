@@ -8,8 +8,6 @@ import android.graphics.Color
 import android.util.TypedValue
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
-import com.hjq.permissions.OnPermissionCallback
-import com.hjq.permissions.XXPermissions
 
 val Context.primaryColor: Int
     get() = try {
@@ -35,35 +33,6 @@ val Context.accentColor: Int
     } catch (_:Exception){
         Color.RED
     }
-
-fun Context.checkPermission(
-    permissions: String,
-    callback: ((never: Boolean) -> Unit)? = null
-): Boolean {
-    if (this !is Activity) throw Exception("context is not activity")
-    if (permissions.isEmpty()) return true
-    if (XXPermissions.isGranted(this, permissions)) return true
-    XXPermissions.with(this)
-        .permission(permissions)
-        .request(object : OnPermissionCallback {
-            override fun onGranted(permissions: MutableList<String>?, all: Boolean) {
-            }
-
-            override fun onDenied(permissions: MutableList<String>?, never: Boolean) {
-                callback?.invoke(never)
-            }
-        })
-    return false
-}
-
-
-fun Context.startPermissionActivity(context: Context, permissions: String? = null) {
-    if (permissions == null) {
-        XXPermissions.startPermissionActivity(context)
-    } else {
-        XXPermissions.startPermissionActivity(context, permissions)
-    }
-}
 
 fun Context.hideKeyboard() {
     if (this !is Activity) return
